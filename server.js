@@ -2,7 +2,7 @@
 
 var express = require('express'),
   app = express(),
-  port = process.env.PORT || 3000,
+  port = process.env.PORT || 8080,
   mongoose = require('mongoose'),
   Task = require('./api/models/model'),
   User = require('./api/models/user'),
