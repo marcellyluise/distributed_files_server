@@ -5,7 +5,7 @@ var urlModule = require('url');
 
 httpModule.createServer(
   function (request, response){
-
+    console.log(request);
     fileSystemModule.readFile('./pages/authentication.html', 
       function(error, data){
         response.writeHead(200, {'Content-Type': 'text/html'});
@@ -18,4 +18,5 @@ httpModule.createServer(
       }
     );
   }
+
 ).listen(8080);
