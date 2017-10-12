@@ -3,6 +3,7 @@ var httpModule = require('http');
 var fileSystemModule = require('fs');
 var urlModule = require('url');
 
+
 httpModule.createServer(
   function (request, response){
     console.log(request);
