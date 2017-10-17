@@ -57,7 +57,7 @@ function multicastNew() {
 
 var PORT = 8080;
 var PORT2 = 8081;
-var HOST = '127.0.0.1';
+var HOST = '172.20.10.15';
 var mapa = {};
 
 var dgram = require('dgram');
@@ -69,6 +69,7 @@ console.log ('chegou aqui');
 
 serverUDP.on('listening', function () {
     var address = serverUDP.address();
+    serverUDP.setBroadcast(true);
     console.log('UDP Server listening on ' + address.address + ":" + address.port);
 });
 
@@ -88,5 +89,5 @@ serverUDP.on('error', function(err) {
 }
 );
 
-serverUDP.bind(8080);
+serverUDP.bind(8080,HOST);
 console.log(process.pid);
