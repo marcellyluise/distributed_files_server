@@ -14,6 +14,7 @@ function processaLogin(request, response) {
         console.log(post['nome']);
         
         var broadcastAddress = "172.20.10.15";
+        var broadcastAddress = "255.255.255.255";
         
         var message = new Buffer(post['nome']);
         
