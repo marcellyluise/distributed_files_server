@@ -1,3 +1,5 @@
+
+//HTTP
 var http = require('http');
 var url = require('url');
 
@@ -7,9 +9,9 @@ var serverHTTP = http.createServer(onRequest).listen(8080);
 //e outro na porta8081.
 serverHTTP.on('error', function(err) {
     if (err.code === 'EADDRINUSE') {
-        console.log('entrou aqui');
+        console.log('Erro na criação do Servidor Web na porta 8080 - tentando criar na 8081.');
         var serverHTTP = http.createServer(onRequest).listen(8081);
-        console.log('entrou no segundo http aqui');
+        console.log('Provavel sucesso na criação do servidor Web na porta 8081.');
     }
 });
 
@@ -35,29 +37,12 @@ function onRequest(request,response) {
     }
 }
 
-
-
-/*iniciando uma escuta por broadcast udp tambem
-var SRC_PORT = 8080;
-var PORT = 8080;
-var MULTICAST_ADDR = '192.168.0.255';
-var dgram = require('dgram');
-var server = dgram.createSocket("udp4");
-
-server.bind(SRC_PORT, function () {
-    setInterval(multicastNew, 4000);
-});
-
-function multicastNew() {
-    var message = new Buffer("Multicast message!");
-    server.send(message, 0, message.length, PORT, MULTICAST_ADDR, function () {
-        console.log("Sent '" + message + "'");
-    });
-} */
+//Conexão UDP - identifica novos pares na rede...
 
 var PORT = 8080;
 var PORT2 = 8081;
-var HOST = '172.20.10.15';
+//var HOST = '172.20.10.15'; - funciona com a rede do meu telefone
+var HOST = '255.255.255.255'; // deve fazer broadcast em qualquer rede...
 var mapa = {};
 
 var dgram = require('dgram');
