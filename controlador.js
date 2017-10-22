@@ -2,6 +2,8 @@
 //HTTP
 var http = require('http');
 var url = require('url');
+var dadosCompartilhados = require('./mod/dados.js');
+    dadosCompartilhados.push({broadcastAddress: '192.168.0.255'});
 
 //iniciando o servidor http
 var serverHTTP = http.createServer(onRequest).listen(8080);
@@ -42,7 +44,7 @@ function onRequest(request,response) {
 var PORT = 8080;
 var PORT2 = 8081;
 //var HOST = '172.20.10.15'; - funciona com a rede do meu telefone
-var HOST = '255.255.255.255'; // deve fazer broadcast em qualquer rede...
+ // deve fazer broadcast em qualquer rede...
 var mapa = {};
 
 var dgram = require('dgram');
@@ -74,5 +76,7 @@ serverUDP.on('error', function(err) {
 }
 );
 
-serverUDP.bind(8080,HOST);
+console.log(dadosCompartilhados[0]);
+console.log(dadosCompartilhados[0]['broadcastAddress']);
+serverUDP.bind(8080,dadosCompartilhados[0]['broadcastAddress']);
 console.log(process.pid);
