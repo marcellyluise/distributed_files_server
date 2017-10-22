@@ -16,7 +16,6 @@ function processaLogin(request, response) {
         var post = qs.parse(body);
         console.log(post['nome']);
         
-         broadcastAddress = dadosCompartilhados[0]['broadcastAddress'];
         //var broadcastAddress = "255.255.255.255";
         
         var message = new Buffer(post['nome']);
@@ -25,7 +24,7 @@ function processaLogin(request, response) {
         client.bind();
         client.on("listening", function () {
             client.setBroadcast(true);
-            client.send(message, 0, message.length, 8080, BROADCASTADDRESS, function(err, bytes) {
+            client.send(message, 0, message.length, 8080, dadosCompartilhados[0]['broadcastAddress'], function(err, bytes) {
                 client.close();
             });
         });
