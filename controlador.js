@@ -2,8 +2,16 @@
 //HTTP
 var http = require('http');
 var url = require('url');
-var dadosCompartilhados = require('./mod/dados.js');
+var dadosCompartilhados = require('./mod/dados');
     dadosCompartilhados.push({broadcastAddress: '192.168.0.255'});
+    dadosCompartilhados.push({qtd:0});
+    dadosCompartilhados.push({usuarios: { cod: 0, ip:'0', usuario:'0'} });
+
+//
+setInterval(() => {
+    var vc = require('./mod/verificaConexoes');
+    vc.verificaConexoes();
+  }, 7000);
 
 //iniciando o servidor http
 var serverHTTP = http.createServer(onRequest).listen(8080);
@@ -77,6 +85,5 @@ serverUDP.on('error', function(err) {
 );
 
 console.log(dadosCompartilhados[0]);
-console.log(dadosCompartilhados[0]['broadcastAddress']);
 serverUDP.bind(8080,dadosCompartilhados[0]['broadcastAddress']);
-console.log(process.pid);
+console.log('processo id:' + process.pid);
