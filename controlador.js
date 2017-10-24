@@ -3,22 +3,64 @@
 var http = require('http');
 var url = require('url');
 var dadosCompartilhados = require('./mod/dados');
-    dadosCompartilhados.push({broadcastAddress: '192.168.0.255'});
+    //dadosCompartilhados.push({broadcastAddress: '192.168.0.255'});
+    dadosCompartilhados.push({broadcastAddress: '172.20.10.15'});
     dadosCompartilhados.push({qtd:0});
-    dadosCompartilhados.push({usuarios: [{ cod: 0, ip:'0', usuario:'0'}] });
+    dadosCompartilhados.push({usuarios: [{ cod: 0, ip:'127.0.0.1', usuario:'localhost', online: 'N'}] });
 var v_cod = 1;
 
+////////////////////////////////////////////////////////
+// 1. Obtem o ip do computador local na rede  e verifica se há conexão de rede...
+////////////////////////////////////////////////////////
 
-//
+var os = require('os');
+var interfaces = os.networkInterfaces();
+var addresses = [];
+for (var k in interfaces) {
+    for (var k2 in interfaces[k]) {
+        var address = interfaces[k][k2];
+        if (address.family === 'IPv4' && !address.internal) {
+            addresses.push(address.address);
+        }
+    }
+}
+var meuIP = addresses[0];
+if (typeof meuIP === 'undefined') {
+    console.log ('Não há conexão de rede!');
+    process.exit(0);
+}
+console.log('Rede ok. Meu ip:' + meuIP);
+
+
+//////////////////////////////////////////////////////////////////
+// 2. Cria servidor tcp para controlar a lista de arquivos e conexões
+//////////////////////////////////////////////////////////////////
+var net = require('net');
+var server = net.createServer(function(socket) {
+    socket.on('data', function(data) {
+        console.log ('Dados: ' + socket.remoteAddress + ': ' + data);
+        socket.write ('Dados Recebidos');
+    });
+
+});
+server.on('listening', function () {
+    console.log (' Servidor TCP listening... ');
+});
+server.listen('9090', meuIP);
+
+/////////////////////////////////////////////////////////////////////////
+//função que, de tempos em tempos verifica se os computadores continuam conectados
+/////////////////////////////////////////////////////////////////////////
 setInterval(() => {
     var vc = require('./mod/verificaConexoes');
     vc.verificaConexoes();
   }, 7000);
 
-//iniciando o servidor http
+//////////////////////////////////////////////////////////////////////////
+//Servidor HTTP - controla a aplicação local na porta 8080
+//////////////////////////////////////////////////////////////////////////
+
 var serverHTTP = http.createServer(onRequest).listen(8080);
-//apenas para testes no mesmo computador, vamos criar um servidor na porta8080
-//e outro na porta8081.
 serverHTTP.on('error', function(err) {
     if (err.code === 'EADDRINUSE') {
         console.log('Erro na criação do Servidor Web na porta 8080 - tentando criar na 8081.');
@@ -26,8 +68,7 @@ serverHTTP.on('error', function(err) {
         console.log('Provavel sucesso na criação do servidor Web na porta 8081.');
     }
 });
-
-console.log('Servidor iniciado');
+console.log('Servidor HTTP - para a aplicação local - iniciado.');
 
 function onRequest(request,response) {
     
@@ -49,25 +90,21 @@ function onRequest(request,response) {
     }
 }
 
-//Conexão UDP - identifica novos pares na rede...
+
+//////////////////////////////////////////////////////////////
+//SERVIDOR UDP - Para escutar broadcast de novos computadores 
+//               querendo se conectar à aplicacao
+//////////////////////////////////////////////////////////////
 
 var PORT = 8080;
-var PORT2 = 8081;
-//var HOST = '172.20.10.15'; - funciona com a rede do meu telefone
- // deve fazer broadcast em qualquer rede...
 var mapa = {};
-
 var dgram = require('dgram');
 var serverUDP = dgram.createSocket('udp4');
-var serverUDP2 = dgram.createSocket('udp4');
-var i = 1;
-
-console.log ('chegou aqui');
 
 serverUDP.on('listening', function () {
     var address = serverUDP.address();
     serverUDP.setBroadcast(true);
-    console.log('UDP Server listening on ' + address.address + ":" + address.port);
+    console.log('UDP Server listening for broadcasts on ' + address.address + ":" + address.port);
 });
 
 serverUDP.on('message', function (message, remote) {
@@ -75,7 +112,10 @@ serverUDP.on('message', function (message, remote) {
    //verifica se o ip recebido já está registrado
    if ( typeof dadosCompartilhados[2]['usuarios'].find(o => o.ip === remote.address) === 'undefined') {
        //fará a inclusão ip no objeto de usuários
-       dadosCompartilhados[2]['usuarios'].push({ cod: v_cod++, ip: remote.address, usuario: '' +message+''});
+       dadosCompartilhados[2]['usuarios'].push({ cod: v_cod++, 
+                                                  ip: remote.address, 
+                                                  usuario: '' +message+'',
+                                                  online: 'N' });
    } else {
        console.log('Recebeu pedido de conexao udp com ip repetido...');
    }
@@ -86,11 +126,10 @@ serverUDP.on('message', function (message, remote) {
 
 serverUDP.on('error', function(err) {
     if (err.code === 'EADDRINUSE') {
-    console.log('Esta é a segunda instancia... Não vou iniciar um servidor udp aqui...');
+    console.log('Erro na inicialização do servidor UDP.');
     }
 }
 );
 
-console.log(dadosCompartilhados[0]);
 serverUDP.bind(8080,dadosCompartilhados[0]['broadcastAddress']);
-console.log('processo id:' + process.pid);
+console.log('Local process id:' + process.pid);
