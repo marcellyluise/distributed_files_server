@@ -5,7 +5,9 @@ var url = require('url');
 var dadosCompartilhados = require('./mod/dados');
     dadosCompartilhados.push({broadcastAddress: '192.168.0.255'});
     dadosCompartilhados.push({qtd:0});
-    dadosCompartilhados.push({usuarios: { cod: 0, ip:'0', usuario:'0'} });
+    dadosCompartilhados.push({usuarios: [{ cod: 0, ip:'0', usuario:'0'}] });
+var v_cod = 1;
+
 
 //
 setInterval(() => {
@@ -69,12 +71,17 @@ serverUDP.on('listening', function () {
 });
 
 serverUDP.on('message', function (message, remote) {
+   //recebeu mensagem broadcast udp
+   //verifica se o ip recebido já está registrado
+   if ( typeof dadosCompartilhados[2]['usuarios'].find(o => o.ip === remote.address) === 'undefined') {
+       //fará a inclusão ip no objeto de usuários
+       dadosCompartilhados[2]['usuarios'].push({ cod: v_cod, ip: remote.address, usuario: '' +message+''});
+   } else {
+       console.log('Recebeu pedido de conexao udp com ip repetido...');
+   }
+   
     console.log('Usuario do endereço ' + remote.address + ':' + remote.port +' -  enviou mensagem: ' + message);
-    mapa[''+ message+''] = [remote.address,remote.port,''+ message+''];
-    //mapa[i++] = remote.address;
-    //mapa[i++] = remote.port;
-    //mapa[i++] = message;
-    console.log(mapa);
+
 });
 
 serverUDP.on('error', function(err) {

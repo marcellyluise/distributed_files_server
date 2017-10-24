@@ -3,7 +3,6 @@ exports.verificaConexoes = verificaConexoes;
 
 function verificaConexoes () {
     console.log('Verificando Conexoes:' );
-    console.log(dadosCompartilhados);
-
+    console.log(dadosCompartilhados[2]['usuarios']);
 }
 
