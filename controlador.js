@@ -75,7 +75,7 @@ serverUDP.on('message', function (message, remote) {
    //verifica se o ip recebido já está registrado
    if ( typeof dadosCompartilhados[2]['usuarios'].find(o => o.ip === remote.address) === 'undefined') {
        //fará a inclusão ip no objeto de usuários
-       dadosCompartilhados[2]['usuarios'].push({ cod: v_cod, ip: remote.address, usuario: '' +message+''});
+       dadosCompartilhados[2]['usuarios'].push({ cod: v_cod++, ip: remote.address, usuario: '' +message+''});
    } else {
        console.log('Recebeu pedido de conexao udp com ip repetido...');
    }
