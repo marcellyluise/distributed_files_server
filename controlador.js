@@ -4,14 +4,15 @@ var http = require('http');
 var url = require('url');
 var dadosCompartilhados = require('./mod/dados');
     //dadosCompartilhados.push({broadcastAddress: '192.168.0.255'});
-    dadosCompartilhados.push({broadcastAddress: '172.20.10.15'});
+    dadosCompartilhados.push({broadcastAddress: '172.20.10.15',
+                              meuIP:'0'});
     dadosCompartilhados.push({qtd:0});
     dadosCompartilhados.push({usuarios: [{ cod: 0, ip:'127.0.0.1', usuario:'localhost', online: 'N'}] });
 var v_cod = 1;
 
-////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // 1. Obtem o ip do computador local na rede  e verifica se há conexão de rede...
-////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 var os = require('os');
 var interfaces = os.networkInterfaces();
@@ -24,12 +25,12 @@ for (var k in interfaces) {
         }
     }
 }
-var meuIP = addresses[0];
-if (typeof meuIP === 'undefined') {
+dadosCompartilhados[0]['meuIP'] = addresses[0];
+if (typeof dadosCompartilhados[0]['meuIP'] === 'undefined') {
     console.log ('Não há conexão de rede!');
     process.exit(0);
 }
-console.log('Rede ok. Meu ip:' + meuIP);
+console.log('Rede ok. Meu ip:' + dadosCompartilhados[0]['meuIP']);
 
 
 //////////////////////////////////////////////////////////////////
@@ -46,18 +47,19 @@ var server = net.createServer(function(socket) {
 server.on('listening', function () {
     console.log (' Servidor TCP listening... ');
 });
-server.listen('9090', meuIP);
+server.listen('9090', dadosCompartilhados[0]['meuIP']);
+
 
 /////////////////////////////////////////////////////////////////////////
-//função que, de tempos em tempos verifica se os computadores continuam conectados
+//3. função que, de tempos em tempos verifica se os computadores continuam conectados
 /////////////////////////////////////////////////////////////////////////
 setInterval(() => {
     var vc = require('./mod/verificaConexoes');
     vc.verificaConexoes();
-  }, 7000);
+  }, 15000);
 
 //////////////////////////////////////////////////////////////////////////
-//Servidor HTTP - controla a aplicação local na porta 8080
+//4. Servidor HTTP - controla a aplicação local na porta 8080
 //////////////////////////////////////////////////////////////////////////
 
 var serverHTTP = http.createServer(onRequest).listen(8080);
@@ -92,8 +94,8 @@ function onRequest(request,response) {
 
 
 //////////////////////////////////////////////////////////////
-//SERVIDOR UDP - Para escutar broadcast de novos computadores 
-//               querendo se conectar à aplicacao
+//5. SERVIDOR UDP - Para escutar broadcast de novos computadores 
+//                  querendo se conectar à aplicacao
 //////////////////////////////////////////////////////////////
 
 var PORT = 8080;
