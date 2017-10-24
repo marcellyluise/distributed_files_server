@@ -30,7 +30,7 @@ function processaLogin(request, response) {
         });
 
         response.writeHead(200, {'Content-Type': 'text/html'});
-        response.write(post['nome']);
+        response.write('Bem vindo ' + post['nome']);
         response.end();
     });
 }

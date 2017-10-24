@@ -29,7 +29,7 @@ function verificaConexoes () {
             if (err.code === 'EADDRINUSE') {
             console.log('Erro na inicialização do servidor UDP.');
             }
-            dadosCompartilhados[2]['usuarios'].splice(i,1);
+            dadosCompartilhados[2]['usuarios'].splice(dadosCompartilhados[2]['usuarios'][key]['cod'],1);
         });
     }
 
