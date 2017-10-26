@@ -4,10 +4,10 @@ var http = require('http');
 var url = require('url');
 var dadosCompartilhados = require('./mod/dados');
     //dadosCompartilhados.push({broadcastAddress: '192.168.0.255'});
-    dadosCompartilhados.push({broadcastAddress: '172.20.10.15',
+    dadosCompartilhados.push({broadcastAddress: '255.255.255.255',
                               meuIP:'0'});
     dadosCompartilhados.push({qtd:0});
-    dadosCompartilhados.push({usuarios: [{ cod: 0, ip:'127.0.0.1', usuario:'localhost', online: 'N'}] });
+    dadosCompartilhados.push({usuarios: [{ cod: 0, ip:'127.0.0.1', usuario:'localhost', online: 'N' }]});
 var v_cod = 1;
 
 ////////////////////////////////////////////////////////////////////////////////
