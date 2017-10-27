@@ -1,0 +1,32 @@
+{
+  "name": "sistema-arquivos-distribuidos",
+  "version": "1.0.0",
+  "description": "Uma aplicação da disciplina de Redes de Computadores da UnB - 2017.2 ® Claiton Custodio, Marcelly Luise",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "4.4.4",	
+    "express-handlebars": "1.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marcellyluise/distributed_files_server.git"
+  },
+  "keywords": [
+    "redes",
+    "tcp",
+    "udp",
+    "socket",
+    "nodejs",
+    "network",
+    "p2p"
+  ],
+  "author": "Claiton Custodio, Marcelly Luise",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/marcellyluise/distributed_files_server/issues"
+  },
+  "homepage": "https://github.com/marcellyluise/distributed_files_server#readme"
+}
