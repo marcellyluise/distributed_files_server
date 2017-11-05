@@ -1,6 +1,7 @@
 
     
 var oData = require('./oData');
+console.log('Local process id:' + process.pid);
 
 
 
@@ -38,6 +39,7 @@ var dgram = require('dgram');
 var serverUDP = dgram.createSocket('udp4');
 
 serverUDP.on('listening', function () {
+    console.log('até aqui...');
     var address = serverUDP.address();
     serverUDP.setBroadcast(true);
     console.log('UDP Server listening for broadcasts on ' + address.address + ":" + address.port);
@@ -71,13 +73,14 @@ serverUDP.on('error', function(err) {
 }
 );
 
+serverUDP.bind(8080,'192.168.0.255');
 
 
 var client = dgram.createSocket({type:"udp4",reuseAddr:true});
 client.bind();
 client.on("listening", function () {
     client.setBroadcast(true);
-    client.send('teste', 0, 'teste'.length, 8080, '255.255.255.255', function(err, bytes) {
+    client.send('teste', 0, 'teste'.length, 8080, '192.168.0.255', function(err, bytes) {
         client.close();
     });
 });
