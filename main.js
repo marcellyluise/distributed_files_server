@@ -73,14 +73,14 @@ serverUDP.on('error', function(err) {
 }
 );
 
-serverUDP.bind(8080,'172.20.10.255');
+serverUDP.bind(8080,'172.20.10.15');
 
 
 var client = dgram.createSocket({type:"udp4",reuseAddr:true});
 client.bind();
 client.on("listening", function () {
     client.setBroadcast(true);
-    client.send('teste', 0, 'teste'.length, 8080, '172.20.10.255', function(err, bytes) {
+    client.send('teste', 0, 'teste'.length, 8080, '172.20.10.15', function(err, bytes) {
         client.close();
     });
 });
