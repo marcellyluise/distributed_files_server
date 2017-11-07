@@ -80,7 +80,7 @@ var client = dgram.createSocket({type:"udp4",reuseAddr:true});
 client.bind();
 client.on("listening", function () {
     client.setBroadcast(true);
-    client.send('teste', 0, 'teste'.length, 8080, '172.20.10.15', function(err, bytes) {
+    client.send('Ola', 0, 'Ola'.length, 8080, '172.20.10.15', function(err, bytes) {
         client.close();
     });
 });
