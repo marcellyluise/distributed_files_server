@@ -1,7 +1,9 @@
 
     
 var oData = require('./oData');
-console.log('Local process id:' + process.pid);
+var net = require('net');
+
+
 
 
 
@@ -48,8 +50,35 @@ serverUDP.on('listening', function () {
 serverUDP.on('message', function (message, remote) {
    //recebeu mensagem broadcast udp
    //conecta com o outro par via tcp
-   console.log('Vai estabelecer a conexão TCP com o outro computador!');
-   
+   serverUDP.send('Emitindo resposta.... conecte comigo...',8080,remote.address);
+ 
+   if (remote.address!=oData['myIP']) {
+
+        console.log('Vai estabelecer a conexão TCP com o outro computador!' + remote.address);
+        var server = net.createServer(function(socket) {
+            socket.write('Echo server\r\n');
+            socket.pipe(socket);
+        });
+
+        server.listen(8080, remote.address);
+
+        // vai tentar a conexão tcp...
+        var client = new net.Socket();
+        client.connect(8080, remote.address, function() {
+            console.log('Connected');
+            client.write('Hello, server! Love, Client.');
+        });
+        
+        client.on('data', function(data) {
+            console.log('Received: ' + data);
+            client.destroy(); // kill client after server's response
+        });
+        
+        client.on('close', function() {
+            console.log('Connection closed');
+        });
+    }
+         
 /*   
    if ( typeof dadosCompartilhados[2]['usuarios'].find(o => o.ip === remote.address) === 'undefined') {
        //fará a inclusão ip no objeto de usuários
