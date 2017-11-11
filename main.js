@@ -60,11 +60,11 @@ serverUDP.on('message', function (message, remote) {
             socket.pipe(socket);
         });
 
-        server.listen(8080, remote.address);
+        server.listen(9090, remote.address);
 
         // vai tentar a conexão tcp...
         var client = new net.Socket();
-        client.connect(8080, remote.address, function() {
+        client.connect(9090, remote.address, function() {
             console.log('Connected');
             client.write('Hello, server! Love, Client.');
         });
@@ -78,7 +78,7 @@ serverUDP.on('message', function (message, remote) {
             console.log('Connection closed');
         });
     }
-         
+
 /*   
    if ( typeof dadosCompartilhados[2]['usuarios'].find(o => o.ip === remote.address) === 'undefined') {
        //fará a inclusão ip no objeto de usuários
