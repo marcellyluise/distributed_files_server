@@ -76,7 +76,7 @@ serverUDP.on('message', function (message, remote) {
         
         client.on('close', function() {
             console.log('Connection closed');
-        }); */
+        }); 
     }
 
 /*   
