@@ -60,7 +60,7 @@ serverUDP.on('message', function (message, remote) {
             socket.pipe(socket);
         });
 
-        server.listen(9090, remote.address);
+        server.listen(9090, oData['myIP']);
 
         /* vai tentar a conexão tcp...
         var client = new net.Socket();
