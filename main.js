@@ -62,7 +62,7 @@ serverUDP.on('message', function (message, remote) {
 
         server.listen(9090, remote.address);
 
-        // vai tentar a conexão tcp...
+        /* vai tentar a conexão tcp...
         var client = new net.Socket();
         client.connect(9090, remote.address, function() {
             console.log('Connected');
@@ -76,7 +76,7 @@ serverUDP.on('message', function (message, remote) {
         
         client.on('close', function() {
             console.log('Connection closed');
-        });
+        }); */
     }
 
 /*   
