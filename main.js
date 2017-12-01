@@ -45,7 +45,7 @@ net.createServer(function (socket) {
 
   // Send a nice welcome message and announce
   socket.write("Welcome " + socket.name + "\n");
-  broadcast(socket.name + " joined the chat\n", socket);
+  //broadcast(socket.name + " joined the chat\n", socket);
 
   // Handle incoming messages from clients.
   socket.on('data', function (data) {
