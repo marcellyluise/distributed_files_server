@@ -28,10 +28,56 @@ if (typeof oData['myIP'] === 'undefined') {
 console.log('Network ok. MyIP:' + oData['myIP']);
 console.log(oData);
 
+////////////////////////////////////////////////////////////////////////////////
+// 2. Inicializa um servidor TCP que vai estabelecer conexao com os outros 
+//    na porta 5000
+////////////////////////////////////////////////////////////////////////////////
+var conexoes = [];
+
+// Start a TCP Server
+net.createServer(function (socket) {
+
+  // Identify this client
+  socket.name = socket.remoteAddress + ":" + socket.remotePort 
+
+  // Put this new client in the list
+  conexoes.push(socket);
+
+  // Send a nice welcome message and announce
+  socket.write("Welcome " + socket.name + "\n");
+  broadcast(socket.name + " joined the chat\n", socket);
+
+  // Handle incoming messages from clients.
+  socket.on('data', function (data) {
+    console.log(socket.name + "> " + data, socket);
+  });
+
+  // Remove the client from the list when it leaves
+  socket.on('end', function () {
+    conexoes.splice(clients.indexOf(socket), 1);
+    console.log(socket.name + " desconectou.\n");
+  });
+  
+  /* Send a message to all clients
+  function broadcast(message, sender) {
+    clients.forEach(function (client) {
+      // Don't want to send it to sender
+      if (client === sender) return;
+      client.write(message);
+    });
+    // Log it to the server output too
+    process.stdout.write(message)
+  } */
+
+}).listen(5000);
+
+// Put a friendly message on the terminal of the server.
+console.log("Servidor TCP running at port 5000\n");
+
 
 ////////////////////////////////////////////////////////////////////////////////
-// 2.  Ao iniciar a aplicação, inicializa o servidor UDP, para escutar sobre 
-//     outros nós entrando 
+// 3.  Inicializa o servidor UDP, para escutar sobre 
+//     outros nós entrando, e, ao receber a mensagem, conecta em TCP
 ////////////////////////////////////////////////////////////////////////////////
 
 var dgram = require('dgram');
@@ -51,14 +97,20 @@ serverUDP.on('message', function (message, remote) {
    if (remote.address!=oData['myIP']) {
 
         console.log('Vai estabelecer a conexão TCP com o outro computador!' + remote.address);
-        /*
-        var server = net.createServer(function(socket) {
-            socket.write('Echo server\r\n');
-            socket.pipe(socket);
+        var oclient = new net.Socket();
+        oclient.connect(5000, remote.address, function() {
+            console.log('Connected');
+            oclient.write('Hello, server! Love, Client.' + meuIP);
         });
-
-        server.listen(9090, remote.address);
-        */
+        
+        oclient.on('data', function(data) {
+            console.log('Como cliente, Recebi: ' + data);
+            
+        });
+        
+        oclient.on('close', function() {
+            console.log('Connection closed');
+        });
        
     }
 
