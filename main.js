@@ -4,9 +4,6 @@ var oData = require('./oData');
 var net = require('net');
 
 
-
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // 1. Obtem o ip do computador local na rede  e verifica se há conexão de rede...
 ////////////////////////////////////////////////////////////////////////////////
@@ -60,7 +57,7 @@ serverUDP.on('message', function (message, remote) {
             socket.pipe(socket);
         });
 
-        server.listen(9090, oData['myIP']);
+        server.listen(9090, remote.address);
 
         /* vai tentar a conexão tcp... */
         var client = new net.Socket();
