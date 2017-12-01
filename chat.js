@@ -43,3 +43,48 @@ net.createServer(function (socket) {
 
 // Put a friendly message on the terminal of the server.
 console.log("Chat server running at port 5000\n");
+
+//Agora, tentando fazer um p2p
+
+//identificando o iplocal...
+var os = require('os');
+var interfaces = os.networkInterfaces();
+var addresses = [];
+for (var k in interfaces) {
+    for (var k2 in interfaces[k]) {
+        var address = interfaces[k][k2];
+        if (address.family === 'IPv4' && !address.internal) {
+            addresses.push(address.address);
+        }
+    }
+}
+
+var meuIP = addresses[0];
+if (typeof oData['myIP'] === 'undefined') {
+    console.log ('No network found!');
+    process.exit(0);
+}
+console.log('Network ok. MyIP:' + meuIP);
+
+//Assumindo que já identificamos os pontos em um vetor... isso será feito no broadcast
+var pontos = ['172.20.10.4', '172.20.10.10', '172.20.10.11'];
+
+pontos.forEach(function (ponto) {
+    if (ponto===meuIP) return;
+
+    var oclient = new net.Socket();
+    oclient.connect(5000, ponto, function() {
+        console.log('Connected');
+        oclient.write('Hello, server! Love, Client.' + meuIP);
+    });
+    
+    oclient.on('data', function(data) {
+        console.log('Como cliente, Recebi: ' + data);
+        
+    });
+    
+    oclient.on('close', function() {
+        console.log('Connection closed');
+    });
+
+});
