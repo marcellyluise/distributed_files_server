@@ -100,7 +100,7 @@ serverUDP.on('message', function (message, remote) {
         var oclient = new net.Socket();
         oclient.connect(5000, remote.address, function() {
             console.log('Connected');
-            oclient.write('Hello, server! Love, Client.' + meuIP);
+            oclient.write('Hello, server! Love, Client.' + oData['myIP']);
         });
         
         oclient.on('data', function(data) {
