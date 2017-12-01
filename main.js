@@ -38,42 +38,28 @@ var dgram = require('dgram');
 var serverUDP = dgram.createSocket('udp4');
 
 serverUDP.on('listening', function () {
-    console.log('até aqui...');
     var address = serverUDP.address();
     serverUDP.setBroadcast(true);
     console.log('UDP Server listening for broadcasts on ' + address.address + ":" + address.port);
 });
 
 serverUDP.on('message', function (message, remote) {
-   //recebeu mensagem broadcast udp
-   //conecta com o outro par via tcp
+   //recebeu mensagem broadcast udp -- vai inicializar o servidor tcp para esse ip
+   //conecta com o outro par via tcp  
    serverUDP.send('Emitindo resposta.... conecte comigo...',8080,remote.address);
  
    if (remote.address!=oData['myIP']) {
 
         console.log('Vai estabelecer a conexão TCP com o outro computador!' + remote.address);
+        /*
         var server = net.createServer(function(socket) {
             socket.write('Echo server\r\n');
             socket.pipe(socket);
         });
 
         server.listen(9090, remote.address);
-
-        /* vai tentar a conexão tcp... */
-        var client = new net.Socket();
-        client.connect(9090, remote.address, function() {
-            console.log('Connected');
-            client.write('Hello, server! Love, Client.');
-        });
-        
-        client.on('data', function(data) {
-            console.log('Received: ' + data);
-            client.destroy(); // kill client after server's response
-        });
-        
-        client.on('close', function() {
-            console.log('Connection closed');
-        }); 
+        */
+       
     }
 
 /*   
