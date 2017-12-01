@@ -54,7 +54,7 @@ net.createServer(function (socket) {
 
   // Remove the client from the list when it leaves
   socket.on('end', function () {
-    conexoes.splice(clients.indexOf(socket), 1);
+    conexoes.splice(conexoes.indexOf(socket), 1);
     console.log(socket.name + " desconectou.\n");
   });
   
@@ -100,7 +100,7 @@ serverUDP.on('message', function (message, remote) {
         var oclient = new net.Socket();
         oclient.connect(5000, remote.address, function() {
             console.log('Connected');
-            oclient.write('Hello, server! Love, Client.' + oData['myIP']);
+            oclient.write('Hello, server! Love, Client.');
         });
         
         oclient.on('data', function(data) {
