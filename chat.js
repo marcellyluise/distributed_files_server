@@ -66,14 +66,19 @@ if (typeof meuIP === 'undefined') {
 }
 console.log('Network ok. MyIP:' + meuIP);
 
+var waitTill = new Date(new Date().getTime() + 10 * 1000);
+while(waitTill > new Date()){}
+
+
 
 //Assumindo que já identificamos os pontos em um vetor... isso será feito no broadcast
 var pontos = ['172.20.10.4', '172.20.10.10', '172.20.10.11'];
 
-while (true) {
+//while (true) {
 
-        console.log('teste');
+        
         pontos.forEach(function (ponto) {
+            console.log('Processando ponto: ' + ponto);
             if (ponto===meuIP) return;
 
             var oclient = new net.Socket();
@@ -94,11 +99,12 @@ while (true) {
             oclient.on('error', function(err) {
                 if (err.code === 'ECONNREFUSED') {
                 console.log('Servidor remoto ainda não está no ar. Esperará 10 secs e tentará de novo...');
-                //var waitTill = new Date(new Date().getTime() + seconds * 1000);
-                //while(waitTill > new Date()){}
+                
                 }
             }
             );
-*/
-        });
-}
+
+            var waitTill = new Date(new Date().getTime() + 3 * 1000);
+            while(waitTill > new Date()){} */
+        }); 
+//} 
