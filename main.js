@@ -104,8 +104,8 @@ serverUDP.on('message', function (message, remote) {
         });
         
         oclient.on('data', function(data) {
-            if (data.indexOf('Hello ')>0) {
-                data = data.match('[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\:[0-9]+');
+            if (data.indexOf('ello ')>0) {
+                data =  String(data).match('[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\:[0-9]+');
             }
             console.log(data +' <-> ' + remote.address + ':5000');
         });
