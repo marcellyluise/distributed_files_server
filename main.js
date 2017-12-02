@@ -44,12 +44,12 @@ net.createServer(function (socket) {
   conexoes.push(socket);
 
   // Send a nice welcome message and announce
-  socket.write("Welcome " + socket.name + "\n");
+  socket.write("Hello " + socket.name + "\n");
   //broadcast(socket.name + " joined the chat\n", socket);
 
   // Handle incoming messages from clients.
   socket.on('data', function (data) {
-    console.log(socket.name + "> " + data);
+    console.log(oData['myIP'] +':5000 <-> '+ socket.name + "> " + data);
   });
 
   // Remove the client from the list when it leaves
@@ -96,16 +96,18 @@ serverUDP.on('message', function (message, remote) {
  
    if (remote.address!=oData['myIP']) {
 
-        console.log('Vai estabelecer a conexão TCP com o outro computador!' + remote.address);
+        console.log('Estabelecendo conexão com ' + remote.address + ':5000');
         var oclient = new net.Socket();
         oclient.connect(5000, remote.address, function() {
-            console.log('Connectado com ' + remote.address );
-            oclient.write('Mensagem de ' +  oData['myIP'] + ': Conexão estabelecida! \n'  );
+            console.log(oData['myIP'] + ':' + this.port + ' <-> ' + remote.address + ':5000');
+            oclient.write('Conexão estabelecida!'  );
         });
         
         oclient.on('data', function(data) {
-            console.log('Como cliente, Recebi: ' + data);
-            
+            if (data.indexOf('Hello ')>0) {
+                data = data.match('[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\:[0-9]+');
+            }
+            console.log(data +' <-> ' + remote.address + ':5000');
         });
         
         oclient.on('close', function() {
