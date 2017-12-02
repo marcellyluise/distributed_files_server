@@ -3,6 +3,7 @@
 var oData = require('./oData');
 var net = require('net');
 var http = require('http');
+var url = require('url');
 
 
 ////////////////////////////////////////////////////////////////////////////////
