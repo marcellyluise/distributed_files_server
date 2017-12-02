@@ -25,8 +25,8 @@ if (typeof oData['myIP'] === 'undefined') {
     console.log ('No network found!');
     process.exit(0);
 }
-console.log('Network ok. MyIP:' + oData['myIP']);
-console.log(oData);
+console.log('Network ok. \nMyIP:' + oData['myIP']);
+//console.log(oData);
 
 ////////////////////////////////////////////////////////////////////////////////
 // 2. Inicializa um servidor TCP que vai estabelecer conexao com os outros 
@@ -38,7 +38,7 @@ var conexoes = [];
 net.createServer(function (socket) {
 
   // Identify this client
-  socket.name = socket.remoteAddress + ":" + socket.remotePort 
+  socket.name = socket.remoteAddress.match('[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+') + ":" + socket.remotePort 
 
   // Put this new client in the list
   conexoes.push(socket);
@@ -99,8 +99,8 @@ serverUDP.on('message', function (message, remote) {
         console.log('Vai estabelecer a conexão TCP com o outro computador!' + remote.address);
         var oclient = new net.Socket();
         oclient.connect(5000, remote.address, function() {
-            console.log('Connected');
-            oclient.write('Hello, server! Love, Client.');
+            console.log('Connectado com ' + remote.address );
+            oclient.write('Mensagem de ' +  oData['myIP'] + ': Conexão estabelecida! \n'  );
         });
         
         oclient.on('data', function(data) {
