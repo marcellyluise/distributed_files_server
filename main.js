@@ -50,7 +50,8 @@ net.createServer(function (socket) {
   // Handle incoming messages from clients.
   socket.on('data', function (data) {
     console.log(oData['myIP'] +':5000 <-> '+ socket.name + "> " + data);
-    //console.log(conexoes);
+    console.log('Qtd de conexões: ' + conexoes.length);
+    console.log(conexoes.indexOf(this) );
   });
 
   // Remove the client from the list when it leaves
@@ -109,10 +110,14 @@ serverUDP.on('message', function (message, remote) {
                 data =  String(data).match('[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\:[0-9]+');
             }
             console.log(data +' <-> ' + remote.address + ':5000');
+            conexoes.push(this);
+            console.log('Qtd de conexões: ' + conexoes.length);
         });
         
-        oclient.on('close', function() {
+        oclient.on('close', function(oCon) {
+            conexoes.splice(conexoes.indexOf(oCon), 1);
             console.log('Connection closed');
+            console.log('Qtd de conexões: ' + conexoes.length);
         });
        
     }
