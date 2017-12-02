@@ -1,6 +1,4 @@
 
-    
-var oData = require('./oData');
 var fs = require('fs');
 var net = require('net');
 var http = require('http');
@@ -10,11 +8,13 @@ var os = require('os');
 var dgram = require('dgram');
 
 
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // 1. Obtem o ip do computador local na rede  e verifica se há conexão de rede...
 ////////////////////////////////////////////////////////////////////////////////
 
-
+var myIP = '';
 var interfaces = os.networkInterfaces();
 var addresses = [];
 for (var k in interfaces) {
@@ -26,13 +26,13 @@ for (var k in interfaces) {
     }
 }
 
-oData['myIP'] = addresses[0];
-if (typeof oData['myIP'] === 'undefined') {
+myIP = addresses[0];
+if (typeof myIP === 'undefined') {
     console.log ('No network found!');
     process.exit(0);
 }
-console.log('Network ok. \nMyIP:' + oData['myIP']);
-//console.log(oData);
+console.log('Network ok. \nMyIP:' + myIP);
+
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -56,7 +56,7 @@ net.createServer(function (socket) {
 
   // Handle incoming messages from clients.
   socket.on('data', function (data) {
-    console.log(oData['myIP'] +':5000 <-> '+ socket.name + "> " + data);
+    console.log(myIP +':5000 <-> '+ socket.name + "> " + data);
     console.log('Qtd de conexões: ' + conexoes.length);
     console.log(conexoes.indexOf(socket) );
   });
@@ -104,12 +104,12 @@ serverUDP.on('message', function (message, remote) {
    //conecta com o outro par via tcp  
    serverUDP.send('Emitindo resposta.... conecte comigo...',8080,remote.address);
  
-   if (remote.address!=oData['myIP']) {
+   if (remote.address!=myIP) {
 
         console.log('Estabelecendo conexão com ' + remote.address + ':5000');
         var oclient = new net.Socket();
         oclient.connect(5000, remote.address, function() {
-            console.log(oData['myIP'] + ':' + this.port + ' <-> ' + remote.address + ':5000');
+            console.log(myIP + ':' + this.port + ' <-> ' + remote.address + ':5000');
             oclient.write('Conexão estabelecida!'  );
         });
         
@@ -207,6 +207,7 @@ function onRequest(request,response) {
             console.log(body);
             var post = qs.parse(body);
             console.log('nome do arquivo' + post['filename']);
+            
             /*
             fs.readFile('./pages/arqs.html', 
             function(error, data) {
