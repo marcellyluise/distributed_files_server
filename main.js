@@ -1,16 +1,20 @@
 
     
 var oData = require('./oData');
+var fs = require('fs');
 var net = require('net');
 var http = require('http');
 var url = require('url');
+var qs = require('querystring');
+var os = require('os');
+var dgram = require('dgram');
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // 1. Obtem o ip do computador local na rede  e verifica se há conexão de rede...
 ////////////////////////////////////////////////////////////////////////////////
 
-var os = require('os');
+
 var interfaces = os.networkInterfaces();
 var addresses = [];
 for (var k in interfaces) {
@@ -86,7 +90,7 @@ console.log("Servidor TCP running at port 5000\n");
 //     outros nós entrando, e, ao receber a mensagem, conecta em TCP
 ////////////////////////////////////////////////////////////////////////////////
 
-var dgram = require('dgram');
+
 var serverUDP = dgram.createSocket('udp4');
 
 serverUDP.on('listening', function () {
@@ -149,6 +153,7 @@ client.on("listening", function () {
     });
 });
 
+
 //////////////////////////////////////////////////////////////////////////
 //4. Servidor HTTP - controla a aplicação local na porta 8080
 //////////////////////////////////////////////////////////////////////////
@@ -168,12 +173,49 @@ function onRequest(request,response) {
     var pathName = url.parse(request.url).pathname;
     
     if (pathName=='/') {
-        var vw = require('./vw/login');
-        vw.login(response);
+        fs.readFile('./pages/login.html', 
+        function(error, data) {
+            response.writeHead(200, {'Content-Type': 'text/html'});
+            response.write(data);
+            response.end();
+        }
+        );
 
     } else if (pathName=='/login' && request.method == 'POST') {
-        var mod = require('./mod/processaLogin');
-        mod.processaLogin(request,response);
+        var body = '';
+        request.on ('data', function (data) {
+        body += data;
+        });
+        request.on ('end', function() {
+            var post = qs.parse(body);
+            console.log('login de ' + post['nome']);
+            fs.readFile('./pages/arqs.html', 
+            function(error, data) {
+                response.writeHead(200, {'Content-Type': 'text/html'});
+                response.write(data);
+                response.write('Bem vindo ' + post['nome']);
+                response.end();
+            });
+        });
+
+    } else if (pathName=='/upload' && request.method == 'POST') {
+        var body = '';
+        request.on ('data', function (data) {
+        body += data;
+        });
+        request.on ('end', function() {
+            console.log(body);
+            var post = qs.parse(body);
+            console.log('nome do arquivo' + post['filename']);
+            /*
+            fs.readFile('./pages/arqs.html', 
+            function(error, data) {
+                response.writeHead(200, {'Content-Type': 'text/html'});
+                response.write(data);
+                response.write('Bem vindo ' + post['nome']);
+                response.end();
+            }); */
+        });
 
     } else {
        // vamos colocar um erro 404 aqui...
