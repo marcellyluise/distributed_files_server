@@ -2,6 +2,7 @@
     
 var oData = require('./oData');
 var net = require('net');
+var http = require('http');
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -28,6 +29,7 @@ if (typeof oData['myIP'] === 'undefined') {
 console.log('Network ok. \nMyIP:' + oData['myIP']);
 //console.log(oData);
 
+
 ////////////////////////////////////////////////////////////////////////////////
 // 2. Inicializa um servidor TCP que vai estabelecer conexao com os outros 
 //    na porta 5000
@@ -44,18 +46,19 @@ net.createServer(function (socket) {
   conexoes.push(socket);
 
   // Send a nice welcome message and announce
-  socket.write("Hello " + socket.name + "\n");
+  socket.write('>Hello ' + socket.name + "\n");
   //broadcast(socket.name + " joined the chat\n", socket);
 
   // Handle incoming messages from clients.
   socket.on('data', function (data) {
     console.log(oData['myIP'] +':5000 <-> '+ socket.name + "> " + data);
     console.log('Qtd de conexões: ' + conexoes.length);
-    console.log(conexoes.indexOf(this) );
+    console.log(conexoes.indexOf(socket) );
   });
 
   // Remove the client from the list when it leaves
   socket.on('end', function () {
+    console.log(conexoes.indexOf(socket) + ' vai desconectar!');  
     conexoes.splice(conexoes.indexOf(socket), 1);
     console.log(socket.name + " desconectou.\n");
   });
@@ -92,7 +95,7 @@ serverUDP.on('listening', function () {
 });
 
 serverUDP.on('message', function (message, remote) {
-   //recebeu mensagem broadcast udp -- vai inicializar o servidor tcp para esse ip
+   //recebeu mensagem broadcast udp 
    //conecta com o outro par via tcp  
    serverUDP.send('Emitindo resposta.... conecte comigo...',8080,remote.address);
  
@@ -106,35 +109,23 @@ serverUDP.on('message', function (message, remote) {
         });
         
         oclient.on('data', function(data) {
-            if (data.indexOf('ello ')>0) {
+            if (data.indexOf('Hello ')>0) {
                 data =  String(data).match('[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\:[0-9]+');
             }
             console.log(data +' <-> ' + remote.address + ':5000');
             conexoes.push(this);
             console.log('Qtd de conexões: ' + conexoes.length);
+            console.log(conexoes.indexOf(this) );
         });
         
         oclient.on('close', function(oCon) {
+            console.log(conexoes.indexOf(oCon) );
             conexoes.splice(conexoes.indexOf(oCon), 1);
             console.log('Connection closed');
             console.log('Qtd de conexões: ' + conexoes.length);
         });
        
     }
-
-/*   
-   if ( typeof dadosCompartilhados[2]['usuarios'].find(o => o.ip === remote.address) === 'undefined') {
-       //fará a inclusão ip no objeto de usuários
-       dadosCompartilhados[2]['usuarios'].push({ cod: v_cod++, 
-                                                  ip: remote.address, 
-                                                  usuario: '' +message+'',
-                                                  online: 'N' });
-   } else {
-       console.log('Recebeu pedido de conexao udp com ip repetido...');
-   }
-   
-    console.log('Usuario do endereço ' + remote.address + ':' + remote.port +' -  enviou mensagem: ' + message);
-*/
 
 });
 
@@ -156,7 +147,41 @@ client.on("listening", function () {
         client.close();
     });
 });
-//
+
+//////////////////////////////////////////////////////////////////////////
+//4. Servidor HTTP - controla a aplicação local na porta 8080
+//////////////////////////////////////////////////////////////////////////
+
+var serverHTTP = http.createServer(onRequest).listen(8080);
+serverHTTP.on('error', function(err) {
+    if (err.code === 'EADDRINUSE') {
+        console.log('Erro na criação do Servidor Web na porta 8080 - tentando criar na 8081.');
+        var serverHTTP = http.createServer(onRequest).listen(8081);
+        console.log('Provavel sucesso na criação do servidor Web na porta 8081.');
+    }
+});
+console.log('Servidor HTTP - para a aplicação local na porta 8080 - iniciado.');
+
+function onRequest(request,response) {
+    
+    var pathName = url.parse(request.url).pathname;
+    
+    if (pathName=='/') {
+        var vw = require('./vw/login');
+        vw.login(response);
+
+    } else if (pathName=='/login' && request.method == 'POST') {
+        var mod = require('./mod/processaLogin');
+        mod.processaLogin(request,response);
+
+    } else {
+       // vamos colocar um erro 404 aqui...
+        console.log('caminho: ' + pathName);
+        response.write('Caminho: ' + pathName);
+        response.end();
+    }
+}
+
 
 
 ////////////////////////////////////////////////////////////////////////////////
