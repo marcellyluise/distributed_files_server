@@ -49,7 +49,7 @@ net.createServer(function (socket) {
 
   // Handle incoming messages from clients.
   socket.on('data', function (data) {
-    console.log(socket.name + "> " + data, socket);
+    console.log(socket.name + "> " + data);
   });
 
   // Remove the client from the list when it leaves
