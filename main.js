@@ -50,6 +50,7 @@ net.createServer(function (socket) {
   // Handle incoming messages from clients.
   socket.on('data', function (data) {
     console.log(oData['myIP'] +':5000 <-> '+ socket.name + "> " + data);
+    //console.log(conexoes);
   });
 
   // Remove the client from the list when it leaves
@@ -139,14 +140,14 @@ serverUDP.on('error', function(err) {
 }
 );
 
-serverUDP.bind(8080,'172.20.10.15');
-
+//serverUDP.bind(8080,'172.20.10.15');
+serverUDP.bind(8080,'255.255.255.255');
 
 var client = dgram.createSocket({type:"udp4",reuseAddr:true});
 client.bind();
 client.on("listening", function () {
     client.setBroadcast(true);
-    client.send('Ola', 0, 'Ola'.length, 8080, '172.20.10.15', function(err, bytes) {
+    client.send('Ola', 0, 'Ola'.length, 8080, '255.255.255.255', function(err, bytes) {
         client.close();
     });
 });
