@@ -140,14 +140,14 @@ serverUDP.on('error', function(err) {
 }
 );
 
-//serverUDP.bind(8080,'172.20.10.15');
-serverUDP.bind(8080,'255.255.255.255');
+serverUDP.bind(8080,'172.20.10.15');
+//serverUDP.bind(8080,'255.255.255.255');
 
 var client = dgram.createSocket({type:"udp4",reuseAddr:true});
 client.bind();
 client.on("listening", function () {
     client.setBroadcast(true);
-    client.send('Ola', 0, 'Ola'.length, 8080, '255.255.255.255', function(err, bytes) {
+    client.send('Ola', 0, 'Ola'.length, 8080, '172.20.10.15', function(err, bytes) {
         client.close();
     });
 });
