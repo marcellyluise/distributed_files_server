@@ -76,16 +76,6 @@ net.createServer(function (socket) {
     console.log(socket.name + " desconectou.\n");
   });
   
-  /* Send a message to all clients
-  function broadcast(message, sender) {
-    clients.forEach(function (client) {
-      // Don't want to send it to sender
-      if (client === sender) return;
-      client.write(message);
-    });
-    // Log it to the server output too
-    process.stdout.write(message)
-  } */
 
 }).listen(5000);
 
@@ -201,12 +191,11 @@ function onRequest(request,response) {
             //registra o usuario
             usuario = post['nome'];
             fs.readFile('./pages/arqs.html', 
-            
             function(error, data) {
                 response.writeHead(200, {'Content-Type': 'text/html'});
                 //processa substituições
-                data = String(data).replace('[[[usuario]]]', post['nome']);
-                data = data.replace('[[[conexoes]]]', stringify(arquivos));
+                data = replaceAll(String(data),'[[[usuario]]]', usuario);
+                data = replaceAll(data,'[[[conexoes]]]', stringify(arquivos));
                 response.write(data);
                 response.end();
             });
@@ -241,27 +230,43 @@ function onRequest(request,response) {
            
             //obtem o corpo do arquivo e converte para texto em base64           
             console.log('---arquivo---'); 
-            arquivo = body.substring( body.indexOf('\r\n\r\n')+4,body.indexOf(dadosArq[0],20));
+            arquivo = body.substring( body.indexOf('\r\n\r\n')+4,body.indexOf(dadosArq[0],20)-2);
             
             //console.log(arquivo);
             //var strarq = new Buffer(arquivo, 'binary').toString('base64');
             //console.log(strarq);
 
-            arquivos.push({ path: ['dir1','dir2'], name: dadosArq[1]['filename'].replace('"',''), file_length: 6, bin: '012345', owner: 'claiton' });
+
+            var novoArquivo ={        path: ['/'], 
+                                   name: replaceAll(dadosArq[1]['filename'],'"',''), 
+                            file_length: arquivo.length, 
+                                    bin: arquivo, 
+                                  owner: usuario 
+                           };
+
+            //atualiza a lista local
+            arquivos.push(novoArquivo);               
+
+            //atualiza as listas remotas
+            broadcast('>UPL ' + novoArquivo);
 
            // console.log(body);
            // var post = qs.parse(body,'\n',':');
            // console.log('nome do arquivo:' + );
             
             
-            fs.readFile('./pages/arqs.html', 
-            function(error, data) {
-                response.writeHead(200, {'Content-Type': 'text/html'});
-                response.write(data);
-                //response.write('Bem vindo ' + post['nome']);
-                response.end();
-            }); 
-        });
+           fs.readFile('./pages/arqs.html', 
+           function(error, data) {
+               response.writeHead(200, {'Content-Type': 'text/html'});
+               //processa substituições
+               data = replaceAll(String(data),'[[[usuario]]]', usuario);
+               data = replaceAll(data,'[[[arquivos]]]', replaceAll(stringify(arquivos),'},{','}\n,{')) ;
+               
+               
+               response.write(data);
+               response.end();
+           });
+       });
 
     } else {
        // vamos colocar um erro 404 aqui...
@@ -271,8 +276,22 @@ function onRequest(request,response) {
     }
 }
 
+function replaceAll(str, find, replace) {
+    return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
+}
 
+function escapeRegExp(str) {
+    return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+}
 
+/* Envia novidades para todos os conectados */
+function broadcast(message) {
+    conexoes.forEach(function (conexao) {
+      conexao.write(message);
+    });
+    
+    process.stdout.write(message)
+  } 
 
 ////////////////////////////////////////////////////////////////////////////////
 // 1. Obtem o ip do computador local na rede  e verifica se há conexão de rede...
