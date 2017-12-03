@@ -56,7 +56,7 @@ net.createServer(function (socket) {
   // Insere o computador na lista de conexoes
   conexoes.push(socket);
   // Avisa ao computador para adicionar esta conexao na lista dele também 
-  socket.write('>ADD ' + socket.name + "\n");
+  socket.write('>OK! ' + socket.name + "\n");
   
   // Gerencia mensagens que chegam dos outros computadores
   socket.on('data', function (data) {
@@ -74,7 +74,12 @@ net.createServer(function (socket) {
 }).listen(5000);
 
 function gerenciaMensagensRecebidas (data, origem) {
-    console.log(myIP +' <-> '+ origem + " - Mensagem > " + data);
+    
+    var tipo = data.toString('utf8').substring(0,3);
+    console.log('tipo: ' + tipo);
+
+
+    console.log(myIP +' <-> '+ origem + " - Mensagem " + data);
     console.log('Qtd de conexões: ' + conexoes.length);
 }
 
