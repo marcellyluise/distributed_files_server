@@ -104,11 +104,11 @@ serverUDP.on('message', function (message, remote) {
  
    if (remote.address!=myIP) {
 
-        console.log('Estabelecendo conexão com ' + remote.address + ':5000');
+        //console.log('Estabelecendo conexão com ' + remote.address + ':5000');
         var oclient = new net.Socket();
         oclient.connect(5000, remote.address, function() {
-            console.log(myIP + ':' + this.port + ' <-> ' + remote.address + ':5000');
-            oclient.write('Conexão estabelecida!'  );
+            //console.log(myIP + ':' + this.port + ' <-> ' + remote.address + ':5000');
+            //oclient.write('Conexão estabelecida!'  );
         });
         
         oclient.on('data', function(data) {
@@ -116,6 +116,8 @@ serverUDP.on('message', function (message, remote) {
                 // Identifica a conexao que está sendo iniciada
                 oclient.name = oclient.remoteAddress.match('[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+') + ":" + oclient.remotePort; 
                 conexoes.push(this);
+                console.log(myIP +' <-> '+ oclient.name + " - Mensagem > " + data);
+                console.log('Qtd de conexões: ' + conexoes.length);
             } else {
                 gerenciaMensagensRecebidas(data,this.name);
             }
