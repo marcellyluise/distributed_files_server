@@ -12,7 +12,7 @@ var stringify = require('./stringify');
 
 
 var arquivos = [];
-arquivos.push({ path: ['dir1','dir2'], name:'arq.txt', file_length: 6, bin: '012345', owner: 'claiton' });
+arquivos.push({ path: ['dir1','dir2'], name:'arq.txt', file_length: 6,  owner: 'claiton' });
 
 var usuario = '';
 
@@ -256,7 +256,6 @@ function onRequest(request,response) {
             var novoArquivo ={        path: ['/'], 
                                    name: replaceAll(dadosArq[1]['filename'],'"',''), 
                             file_length: arquivo.length, 
-                                    bin: arquivo, 
                                   owner: usuario 
                            };
 
