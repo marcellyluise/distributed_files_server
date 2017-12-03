@@ -108,7 +108,7 @@ serverUDP.on('message', function (message, remote) {
         var oclient = new net.Socket();
         oclient.connect(5000, remote.address, function() {
             //console.log(myIP + ':' + this.port + ' <-> ' + remote.address + ':5000');
-            //oclient.write('Conexão estabelecida!'  );
+            oclient.write('>ADDED '  );
         });
         
         oclient.on('data', function(data) {
