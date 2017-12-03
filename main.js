@@ -114,7 +114,7 @@ serverUDP.on('message', function (message, remote) {
         oclient.on('data', function(data) {
             if (data.indexOf('ADD')===1) {
                 // Identifica a conexao que está sendo iniciada
-                oclient.name = oclient.remoteAddress.match('[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+') + ":" + oClient.remotePort; 
+                oclient.name = oclient.remoteAddress.match('[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+') + ":" + oclient.remotePort; 
                 conexoes.push(this);
             } else {
                 gerenciaMensagensRecebidas(data,this.name);
