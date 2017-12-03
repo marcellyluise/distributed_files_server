@@ -112,7 +112,7 @@ serverUDP.on('message', function (message, remote) {
         });
         
         oclient.on('data', function(data) {
-            if (data.indexOf('ADD')=1) {
+            if (String(data).indexOf('ADD')=1) {
                 // Identifica a conexao que está sendo iniciada
                 oclient.name = oclient.remoteAddress.match('[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+') + ":" + oClient.remotePort; 
                 conexoes.push(this);
