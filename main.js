@@ -17,10 +17,9 @@ arquivos.push({ path: ['dir1','dir2'], name:'arq.txt', file_length: 6, bin: '012
 var usuario = '';
 
 
-////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
 // 1. Obtem o ip do computador local na rede  e verifica se há conexão de rede...
-////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////////////////////
 var myIP = '';
 var interfaces = os.networkInterfaces();
 var addresses = [];
@@ -52,21 +51,16 @@ var dadosConexoes = [];
 // Start a TCP Server
 net.createServer(function (socket) {
 
-  // Identify this client
+  // Identifica a conexao que está sendo iniciada
   socket.name = socket.remoteAddress.match('[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+') + ":" + socket.remotePort 
-
-  // Put this new client in the list
+  // Insere o computador na lista de conexoes
   conexoes.push(socket);
-
-  // Send a nice welcome message and announce
-  socket.write('>Hello ' + socket.name + "\n");
-  //broadcast(socket.name + " joined the chat\n", socket);
-
-  // Handle incoming messages from clients.
+  // Avisa ao computador para adicionar esta conexao na lista dele também 
+  socket.write('>ADD ' + socket.name + "\n");
+  
+  // Gerencia mensagens que chegam dos outros computadores
   socket.on('data', function (data) {
-    console.log(myIP +':5000 <-> '+ socket.name + "> " + data);
-    console.log('Qtd de conexões: ' + conexoes.length);
-    console.log(conexoes.indexOf(socket) );
+     gerenciaMensagensRecebidas(data,socket.name); 
   });
 
   // Remove the client from the list when it leaves
@@ -78,6 +72,12 @@ net.createServer(function (socket) {
   
 
 }).listen(5000);
+
+function gerenciaMensagensRecebidas (data, origem) {
+    console.log(myIP +' <-> '+ origem + " - Mensagem > " + data);
+    console.log('Qtd de conexões: ' + conexoes.length);
+}
+
 
 // Put a friendly message on the terminal of the server.
 console.log("Servidor TCP running at port 5000\n");
@@ -112,13 +112,13 @@ serverUDP.on('message', function (message, remote) {
         });
         
         oclient.on('data', function(data) {
-            if (data.indexOf('Hello ')>0) {
-                data =  String(data).match('[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\:[0-9]+');
+            if (data.indexOf('ADD')=1) {
+                // Identifica a conexao que está sendo iniciada
+                oclient.name = oclient.remoteAddress.match('[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+') + ":" + oClient.remotePort; 
+                conexoes.push(this);
+            } else {
+                gerenciaMensagensRecebidas(data,this.name);
             }
-            console.log(data +' <-> ' + remote.address + ':5000');
-            conexoes.push(this);
-            console.log('Qtd de conexões: ' + conexoes.length);
-            console.log(conexoes.indexOf(this) );
         });
         
         oclient.on('close', function(oCon) {
