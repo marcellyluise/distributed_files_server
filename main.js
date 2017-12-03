@@ -7,20 +7,28 @@ var qs = require('querystring');
 var os = require('os');
 var dgram = require('dgram');
 
-
 var stringify = require('./stringify');
 
-
-var arquivos = [];
-arquivos.push({ path: ['dir1','dir2'], name:'arq.txt', file_length: 6,  owner: 'claiton' });
-
+//identifica o usuario que vai logar nesta instancia
+//se for o caso...
 var usuario = '';
+
+//lista de arquivos que estão carregados no servidor
+var arquivos = [];
+
+//modelo da lista de arquivos...
+//arquivos.push({ path: ['dir1','dir2'], name:'arq.txt', file_length: 6,  owner: 'claiton' });
+
+//lista de conexões que estão ativas 
+var conexoes;
+
+//endereço ip desta instancia
+var myIP = '';
 
 
 ////////////////////////////////////////////////////////////////////////////////////
 // 1. Obtem o ip do computador local na rede  e verifica se há conexão de rede...
 ////////////////////////////////////////////////////////////////////////////////////
-var myIP = '';
 var interfaces = os.networkInterfaces();
 var addresses = [];
 for (var k in interfaces) {
@@ -45,8 +53,6 @@ console.log('Network ok. \nMyIP:' + myIP);
 // 2. Inicializa um servidor TCP que vai estabelecer conexao com os outros 
 //    na porta 5000
 ////////////////////////////////////////////////////////////////////////////////
-var conexoes = [];
-var dadosConexoes = [];
 
 // Start a TCP Server
 net.createServer(function (socket) {
@@ -93,7 +99,7 @@ function gerenciaMensagensRecebidas (data, origem) {
 }
 
 
-// Put a friendly message on the terminal of the server.
+//Avisa que o servidor TCP está escutando...
 console.log("Servidor TCP executando na porta 5000\n");
 
 
