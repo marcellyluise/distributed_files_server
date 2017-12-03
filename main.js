@@ -108,19 +108,19 @@ serverUDP.on('message', function (message, remote) {
         var oclient = new net.Socket();
         oclient.connect(5000, remote.address, function() {
             //console.log(myIP + ':' + this.port + ' <-> ' + remote.address + ':5000');
-            oclient.write('>ADDED '  );
+            oclient.name = oclient.remoteAddress.match('[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+') + ":" + oclient.remotePort;
+            conexoes.push(this);
+            oclient.write('OK');
         });
         
         oclient.on('data', function(data) {
-            if (data.indexOf('ADD')===1) {
+           /* if (data.indexOf('ADD')===1) {
                 // Identifica a conexao que está sendo iniciada
-                oclient.name = oclient.remoteAddress.match('[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+') + ":" + oclient.remotePort; 
-                conexoes.push(this);
                 console.log(myIP +' <-> '+ oclient.name + " - Mensagem > " + data);
                 console.log('Qtd de conexões: ' + conexoes.length);
-            } else {
+            } else { */
                 gerenciaMensagensRecebidas(data,this.name);
-            }
+           // }
         });
         
         oclient.on('close', function(oCon) {
