@@ -20,7 +20,7 @@ var arquivos = [];
 //arquivos.push({ path: ['dir1','dir2'], name:'arq.txt', file_length: 6,  owner: 'claiton' });
 
 //lista de conexões que estão ativas 
-var conexoes;
+var conexoes = [];
 
 //endereço ip desta instancia
 var myIP = '';
