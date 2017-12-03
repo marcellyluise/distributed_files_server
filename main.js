@@ -8,6 +8,13 @@ var os = require('os');
 var dgram = require('dgram');
 
 
+var stringify = require('./stringify');
+
+
+var arquivos = [];
+arquivos.push({ path: ['dir1','dir2'], name:'arq.txt', file_length: 6, bin: '012345', owner: 'claiton' });
+
+var usuario = '';
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -40,6 +47,7 @@ console.log('Network ok. \nMyIP:' + myIP);
 //    na porta 5000
 ////////////////////////////////////////////////////////////////////////////////
 var conexoes = [];
+var dadosConexoes = [];
 
 // Start a TCP Server
 net.createServer(function (socket) {
@@ -189,33 +197,70 @@ function onRequest(request,response) {
         request.on ('end', function() {
             var post = qs.parse(body);
             console.log('login de ' + post['nome']);
+            
+            //registra o usuario
+            usuario = post['nome'];
             fs.readFile('./pages/arqs.html', 
+            
             function(error, data) {
                 response.writeHead(200, {'Content-Type': 'text/html'});
+                //processa substituições
+                data = String(data).replace('[[[usuario]]]', post['nome']);
+                data = data.replace('[[[conexoes]]]', stringify(arquivos));
                 response.write(data);
-                response.write('Bem vindo ' + post['nome']);
                 response.end();
             });
         });
 
     } else if (pathName=='/upload' && request.method == 'POST') {
+        
+        //Obtem a string que limita o arquivo que está sendo feito upload
+        //var limites = qs.parse(request.headers['content-type'],'; ','=');
+        //console.log(limites);
+        
+        //Junta as partes do arquivo na variável body
         var body = '';
         request.on ('data', function (data) {
         body += data;
         });
+
+       
         request.on ('end', function() {
-            console.log(body);
-            var post = qs.parse(body);
-            console.log('nome do arquivo' + post['filename']);
             
-            /*
+            //terminou o upload...
+            //separa o cabeçalho do arquivo, do corpo
+            var dadosArq = body.split('\r\n\r\n',1);
+
+            //trata o cabeçalho, até chegar ao nome do arquivo...
+            dadosArq = dadosArq[0].split('\r\n',3);
+            dadosArq[1] = qs.parse(dadosArq[1], '; ','=');
+            console.log(dadosArq[0]);
+
+            console.log('---nome do arquivo---');
+            console.log(dadosArq[1]['filename']);
+           
+            //obtem o corpo do arquivo e converte para texto em base64           
+            console.log('---arquivo---'); 
+            arquivo = body.substring( body.indexOf('\r\n\r\n')+4,body.indexOf(dadosArq[0],20));
+            
+            //console.log(arquivo);
+            //var strarq = new Buffer(arquivo, 'binary').toString('base64');
+            //console.log(strarq);
+
+            arquivos.push({ path: ['dir1','dir2'], name: dadosArq[1]['filename'].replace('"',''), file_length: 6, bin: '012345', owner: 'claiton' });
+
+           // console.log(body);
+           // var post = qs.parse(body,'\n',':');
+           // console.log('nome do arquivo:' + );
+            
+            
             fs.readFile('./pages/arqs.html', 
             function(error, data) {
                 response.writeHead(200, {'Content-Type': 'text/html'});
                 response.write(data);
-                response.write('Bem vindo ' + post['nome']);
+                //response.write('Bem vindo ' + post['nome']);
                 response.end();
-            }); */
+            }); 
         });
 
     } else {
@@ -225,6 +270,7 @@ function onRequest(request,response) {
         response.end();
     }
 }
+
 
 
 
