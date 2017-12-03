@@ -79,7 +79,7 @@ function gerenciaMensagensRecebidas (data, origem) {
     console.log('tipo: ' + tipo);
     switch (tipo) {
         case '>UPL':
-        var arquivorecebido = JSON.parse( data.toString('utf-8').substring(6,data.toString('utf-8').length-1));
+        var arquivorecebido = JSON.parse(data.toString('utf-8').substring(5,data.toString('utf-8').length));
         console.log(arquivorecebido);
         arquivos.push(arquivorecebido);
         break;
