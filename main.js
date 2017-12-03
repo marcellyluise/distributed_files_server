@@ -75,8 +75,17 @@ net.createServer(function (socket) {
 
 function gerenciaMensagensRecebidas (data, origem) {
     
-    var tipo = data.toString('utf8').substring(0,3);
+    var tipo = data.toString('utf8').substring(0,4);
     console.log('tipo: ' + tipo);
+    switch (tipo) {
+        case '>UPL':
+        var arquivorecebido = JSON.parse( data.toString('utf-8').substring(6,data.toString('utf-8').length-1));
+        console.log(arquivorecebido);
+        arquivos.push(arquivorecebido);
+        break;
+        default:
+    }
+    
 
 
     console.log(myIP +' <-> '+ origem + " - Mensagem " + data);
