@@ -2,12 +2,13 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>AD Uploader</title>
+        <title>SERVIDOR DE ARQUIVOS - UPLOAD</title>
     </head>
     <body>
-        <p>Bem vindo [[[usuario]]]!</p>
+        <p style='color:red; font-size:2em;'> [[[erro]]] </p>
+        <p>Arquivos de [[[usuario]]]!</p>
 
-        <pre>[[[conexoes]]] </pre>
+        <pre>[[[arquivos]]]</pre>
 
         <form id="uploadbanner" enctype="multipart/form-data" method="post" action="/upload">
             <input id="fileupload" name="myfile" type="file" />

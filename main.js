@@ -80,7 +80,7 @@ function gerenciaMensagensRecebidas (data, origem) {
 
 
 // Put a friendly message on the terminal of the server.
-console.log("Servidor TCP running at port 5000\n");
+console.log("Servidor TCP executando na porta 5000\n");
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -197,7 +197,7 @@ function onRequest(request,response) {
                 response.writeHead(200, {'Content-Type': 'text/html'});
                 //processa substituições
                 data = replaceAll(String(data),'[[[usuario]]]', usuario);
-                data = replaceAll(data,'[[[conexoes]]]', stringify(arquivos));
+                data = replaceAll(data,'[[[arquivos]]]', stringify(arquivos));
                 response.write(data);
                 response.end();
             });
@@ -225,13 +225,13 @@ function onRequest(request,response) {
             //trata o cabeçalho, até chegar ao nome do arquivo...
             dadosArq = dadosArq[0].split('\r\n',3);
             dadosArq[1] = qs.parse(dadosArq[1], '; ','=');
-            console.log(dadosArq[0]);
+            //console.log(dadosArq[0]);
 
-            console.log('---nome do arquivo---');
-            console.log(dadosArq[1]['filename']);
+            console.log('->Upload de arquivo:' + dadosArq[1]['filename']);
+            //console.log(dadosArq[1]['filename']);
            
             //obtem o corpo do arquivo e converte para texto em base64           
-            console.log('---arquivo---'); 
+            //console.log('---arquivo---'); 
             arquivo = body.substring( body.indexOf('\r\n\r\n')+4,body.indexOf(dadosArq[0],20)-2);
             
             //console.log(arquivo);
@@ -246,11 +246,29 @@ function onRequest(request,response) {
                                   owner: usuario 
                            };
 
-            //atualiza a lista local
-            arquivos.push(novoArquivo);               
+            var erroArquivo = '';               
+            
+            //verifica erros
+            //1. O arquivo está vazio?
+            if (novoArquivo['file_length']===0) {
+                erroArquivo = 'Arquivo não informado! - Selecione o arquivo! ';
+            }
+            
+            //2. O arquivo já existe?
+            var picked = arquivos.find(o => o['name'] === novoArquivo['name'] && o['owner'] === novoArquivo['owner']);
+            if (typeof picked !== 'undefined') {
+                erroArquivo = 'Arquivo duplicado! - Selecione outro! ';
+            }
 
-            //atualiza as listas remotas
-            broadcast('>UPL ' + novoArquivo);
+            //console.log(picked);
+ 
+            if (erroArquivo==='') {
+                //atualiza a lista local
+                arquivos.push(novoArquivo);               
+
+                //atualiza as listas remotas
+                broadcast('>UPL ' + JSON.stringify(novoArquivo));
+            }
 
            // console.log(body);
            // var post = qs.parse(body,'\n',':');
@@ -259,9 +277,12 @@ function onRequest(request,response) {
             
            fs.readFile('./pages/arqs.html', 
            function(error, data) {
+               
                response.writeHead(200, {'Content-Type': 'text/html'});
+               
                //processa substituições
                data = replaceAll(String(data),'[[[usuario]]]', usuario);
+               data = replaceAll(String(data),'[[[erro]]]', erroArquivo);
                data = replaceAll(data,'[[[arquivos]]]', replaceAll(stringify(arquivos),'},{','}\n,{')) ;
                
                
@@ -292,7 +313,7 @@ function broadcast(message) {
       conexao.write(message);
     });
     
-    process.stdout.write(message)
+    console.log(message);
   } 
 
 ////////////////////////////////////////////////////////////////////////////////
