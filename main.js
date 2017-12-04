@@ -82,37 +82,40 @@ net.createServer(function (socket) {
 }).listen(5000);
 
 function gerenciaMensagensRecebidas (data, origem, socket) {
-    
-    var tipo = data.toString('utf8').substring(0,4);
-    console.log('tipo: ' + tipo);
-    switch (tipo) {
-        case '>LIS':
-        if (arquivos.length>0) {
-            arquivos.forEach(function (arquivo) {
-                socket.write('>UPL '+ stringify(arquivo));
-                console.log(' Enviou >UPL ' +  stringify(arquivo) );
-                console.log('separando atividades ...');
-              });
-        }
-        break;
-        case '>UPL':
-        //aviso de arquivo adiconado - adicona esse arquivo na lista de arquivos - se já não existir
-        var arquivorecebido = JSON.parse(data.toString('utf-8').substring(5,data.toString('utf-8').length));
-        if (arquivos.indexOf(arquivorecebido)<0) {
-            arquivos.push(arquivorecebido);
-        }
-        break;
-        case '>DEL':
-        //aviso de arquivo apagado - retira esse arquivo da lista de arquivos
-        var arquivoAApagar = JSON.parse(data.toString('utf-8').substring(5,data.toString('utf-8').length));
-        if (arquivos.indexOf(arquivoAApagar)>=0) {
-            arquivos.splice(arquivos.indexOf(arquivoAApagar),1);
-        }
-        break;
-        default:
-    }
-    
+    var vData = data.toString('utf8').split('|-|-|'); 
+    vData.forEach(function (data) {
+        var tipo = data.toString('utf8').substring(0,4);
 
+        console.log('tipo: ' + tipo);
+        switch (tipo) {
+            case '>LIS':
+            if (arquivos.length>0) {
+                arquivos.forEach(function (arquivo) {
+                    escreve(socket, '>UPL '+ stringify(arquivo));
+                    console.log(' Enviou >UPL ' +  stringify(arquivo) );
+                    console.log('separando atividades ...');
+                });
+            }
+            break;
+            
+            case '>UPL':
+            //aviso de arquivo adiconado - adicona esse arquivo na lista de arquivos - se já não existir
+            var arquivorecebido = JSON.parse(data.toString('utf-8').substring(5,data.toString('utf-8').length));
+            if (arquivos.indexOf(arquivorecebido)<0) {
+                arquivos.push(arquivorecebido);
+            }
+            break;
+            
+            case '>DEL':
+            //aviso de arquivo apagado - retira esse arquivo da lista de arquivos
+            var arquivoAApagar = JSON.parse(data.toString('utf-8').substring(5,data.toString('utf-8').length));
+            //if (arquivos.indexOf(arquivoAApagar)>=0) {
+                arquivos.splice(arquivos.indexOf(arquivoAApagar),1);
+            //}
+            break;
+            default:
+        }
+    });
 
     console.log(myIP +' <-> '+ origem + " - Mensagem " + data);
     console.log('Qtd de conexões: ' + conexoes.length);
@@ -150,7 +153,7 @@ serverUDP.on('message', function (message, remote) {
             //console.log(myIP + ':' + this.port + ' <-> ' + remote.address + ':5000');
             oclient.name = oclient.remoteAddress.match('[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+') + ":" + oclient.remotePort;
             conexoes.push(this);
-            oclient.write('>OK!');
+            escreve(oclient, '>OK!');
         });
         
         oclient.on('data', function(data) {
@@ -395,11 +398,15 @@ function escapeRegExp(str) {
 /* Envia novidades para todos os conectados */
 function broadcast(message) {
     conexoes.forEach(function (conexao) {
-      conexao.write(message);
+      escreve(conexao,message);
     });
     
     //console.log(message);
   } 
+
+  function escreve(socket, mensagem) {
+      socket.write(mensagem + '|-|-|');
+  }
 
   function formataTabelaArquivos() {
     var txt = ' <form action="/delete" method="post" enctype="text/plain"> <table border="1"> \n';
