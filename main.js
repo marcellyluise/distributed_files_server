@@ -17,13 +17,15 @@ var usuario = '';
 var arquivos = [];
 
 //modelo da lista de arquivos...
-//arquivos.push({ path: ['dir1','dir2'], name:'arq.txt', file_length: 6,  owner: 'claiton' });
+//arquivos.push({ cod:0, path:'/', name:'arq.txt', file_length: 6,  owner: 'claiton' });
 
 //lista de conexões que estão ativas 
 var conexoes = [];
 
 //endereço ip desta instancia
 var myIP = '';
+
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -208,6 +210,7 @@ function onRequest(request,response) {
         });
         request.on ('end', function() {
             var post = qs.parse(body);
+            var erroLogin = '';
             console.log('login de ' + post['nome']);
             
             //registra o usuario
@@ -216,8 +219,9 @@ function onRequest(request,response) {
             function(error, data) {
                 response.writeHead(200, {'Content-Type': 'text/html'});
                 //processa substituições
+                data = replaceAll(String(data),'[[[erro]]]', erroLogin);
                 data = replaceAll(String(data),'[[[usuario]]]', usuario);
-                data = replaceAll(data,'[[[arquivos]]]', stringify(arquivos));
+                data = replaceAll(data,'[[[arquivos]]]', replaceAll(stringify(arquivos),'},{','}\n,{'));
                 response.write(data);
                 response.end();
             });
@@ -259,7 +263,7 @@ function onRequest(request,response) {
             //console.log(strarq);
 
 
-            var novoArquivo ={        path: ['/'], 
+            var novoArquivo ={        path: '/', 
                                    name: replaceAll(dadosArq[1]['filename'],'"',''), 
                             file_length: arquivo.length, 
                                   owner: usuario 
