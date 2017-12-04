@@ -117,9 +117,14 @@ function gerenciaMensagensRecebidas (data, origem, socket) {
             case '>DEL':
             //aviso de arquivo apagado - retira esse arquivo da lista de arquivos
             var arquivoAApagar = JSON.parse(ldata.toString('utf-8').substring(5));
+
+            var picked = arquivos.find(o => o['name'] === arquivoAApagar['name'] && o['owner'] === arquivoAApagar['owner']);
+            if (typeof picked !== 'undefined') {
+                arquivos.splice(arquivos.indexOf(picked), 1);
+             } 
             console.log( '->arquivo a apagar: ' + stringify(arquivoAApagar));
             //if (arquivos.indexOf(arquivoAApagar)>=0) {
-                arquivos.splice(arquivos.indexOf(arquivoAApagar),1);
+            //    arquivos.splice(arquivos.indexOf(arquivoAApagar),1);
             //}
             break;
             default:
