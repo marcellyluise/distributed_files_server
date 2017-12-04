@@ -93,8 +93,6 @@ function gerenciaMensagensRecebidas (data, origem, socket) {
               });
 
         }
-        var arquivorecebido = JSON.parse(data.toString('utf-8').substring(5,data.toString('utf-8').length));
-        arquivos.push(arquivorecebido);
         break;
         case '>UPL':
         //aviso de arquivo adiconado - adicona esse arquivo na lista de arquivos - se já não existir
