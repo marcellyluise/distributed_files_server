@@ -90,6 +90,7 @@ function gerenciaMensagensRecebidas (data, origem, socket) {
         if (arquivos.length>0) {
             arquivos.forEach(function (arquivo) {
                 socket.write('>UPL '+ stringify(arquivo));
+                console.log(' Enviou >UPL ' +  stringify(arquivo) );
                 console.log('separando atividades ...');
               });
         }
