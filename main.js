@@ -92,7 +92,6 @@ function gerenciaMensagensRecebidas (data, origem) {
         break;
         case '>DEL':
         var arquivoAApagar = JSON.parse(data.toString('utf-8').substring(5,data.toString('utf-8').length));
-        arquivos.push(arquivorecebido);
         arquivos.splice(arquivos.indexOf(arquivoAApagar),1);
         break;
         default:
