@@ -68,7 +68,7 @@ net.createServer(function (socket) {
   
   // Gerencia mensagens que chegam dos outros computadores
   socket.on('data', function (data) {
-     gerenciaMensagensRecebidas(data,socket.name); 
+     gerenciaMensagensRecebidas(data,socket.name, socket); 
   });
 
   // Remove the client from the list when it leaves
@@ -81,18 +81,34 @@ net.createServer(function (socket) {
 
 }).listen(5000);
 
-function gerenciaMensagensRecebidas (data, origem) {
+function gerenciaMensagensRecebidas (data, origem, socket) {
     
     var tipo = data.toString('utf8').substring(0,4);
     console.log('tipo: ' + tipo);
     switch (tipo) {
-        case '>UPL':
+        case '>LIS':
+        if (arquivos.length>0) {
+            arquivos.forEach(function (arquivo) {
+                socket.write('>UPL '+stringify(arquivo));
+              });
+
+        }
         var arquivorecebido = JSON.parse(data.toString('utf-8').substring(5,data.toString('utf-8').length));
         arquivos.push(arquivorecebido);
         break;
+        case '>UPL':
+        //aviso de arquivo adiconado - adicona esse arquivo na lista de arquivos - se já não existir
+        var arquivorecebido = JSON.parse(data.toString('utf-8').substring(5,data.toString('utf-8').length));
+        if (arquivos.indexOf(arquivorecebido)<0) {
+            arquivos.push(arquivorecebido);
+        }
+        break;
         case '>DEL':
+        //aviso de arquivo apagado - retira esse arquivo da lista de arquivos
         var arquivoAApagar = JSON.parse(data.toString('utf-8').substring(5,data.toString('utf-8').length));
-        arquivos.splice(arquivos.indexOf(arquivoAApagar),1);
+        if (arquivos.indexOf(arquivoAApagar)>=0) {
+            arquivos.splice(arquivos.indexOf(arquivoAApagar),1);
+        }
         break;
         default:
     }
@@ -135,7 +151,7 @@ serverUDP.on('message', function (message, remote) {
             //console.log(myIP + ':' + this.port + ' <-> ' + remote.address + ':5000');
             oclient.name = oclient.remoteAddress.match('[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+') + ":" + oclient.remotePort;
             conexoes.push(this);
-            oclient.write('OK');
+            oclient.write('>LIS');
         });
         
         oclient.on('data', function(data) {
@@ -144,7 +160,7 @@ serverUDP.on('message', function (message, remote) {
                 console.log(myIP +' <-> '+ oclient.name + " - Mensagem > " + data);
                 console.log('Qtd de conexões: ' + conexoes.length);
             } else { */
-                gerenciaMensagensRecebidas(data,this.name);
+                gerenciaMensagensRecebidas(data,this.name, this);
            // }
         });
         
