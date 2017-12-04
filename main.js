@@ -221,7 +221,7 @@ function onRequest(request,response) {
                 //processa substituições
                 data = replaceAll(String(data),'[[[erro]]]', erroLogin);
                 data = replaceAll(String(data),'[[[usuario]]]', usuario);
-                data = replaceAll(data,'[[[arquivos]]]', replaceAll(stringify(arquivos),'},{','}\n,{'));
+                data = replaceAll(data,'[[[arquivos]]]', formataTabelaArquivos());
                 response.write(data);
                 response.end();
             });
@@ -274,7 +274,7 @@ function onRequest(request,response) {
             //verifica erros
             //1. O arquivo está vazio?
             if (novoArquivo['file_length']===0) {
-                erroArquivo = 'Arquivo não informado! - Selecione o arquivo! ';
+                erroArquivo = 'Atualizando dados...';
             }
             
             //2. O arquivo já existe?
@@ -284,6 +284,7 @@ function onRequest(request,response) {
             }
 
             //console.log(picked);
+            
  
             if (erroArquivo==='') {
                 //atualiza a lista local
@@ -296,6 +297,9 @@ function onRequest(request,response) {
            // console.log(body);
            // var post = qs.parse(body,'\n',':');
            // console.log('nome do arquivo:' + );
+
+           
+           var txt = formataTabelaArquivos();
             
             
            fs.readFile('./pages/arqs.html', 
@@ -306,7 +310,8 @@ function onRequest(request,response) {
                //processa substituições
                data = replaceAll(String(data),'[[[usuario]]]', usuario);
                data = replaceAll(String(data),'[[[erro]]]', erroArquivo);
-               data = replaceAll(data,'[[[arquivos]]]', replaceAll(stringify(arquivos),'},{','}\n,{')) ;
+               //data = replaceAll(data,'[[[arquivos]]]', replaceAll(stringify(arquivos),'},{','}\n,{')) ;
+               data = replaceAll(data,'[[[arquivos]]]', txt) ;
                
                
                response.write(data);
@@ -338,6 +343,16 @@ function broadcast(message) {
     
     console.log(message);
   } 
+
+  function formataTabelaArquivos() {
+    var txt = "<table border='1'> \n";
+    txt += "<tr> <th> Caminho </th> <th> Nome </th> <th> tamanho </th> <th>Proprietário</th> </tr>\n";
+    for (x in arquivos) {
+        txt += "<tr><td>" + arquivos[x].path + "</td><td>" + arquivos[x].name + "</td><td>" + arquivos[x].file_length + "</td><td>" + arquivos[x].owner + "</td></tr>\n";
+    }
+    txt += "</table>";
+    return txt;
+  }
 
 ////////////////////////////////////////////////////////////////////////////////
 // 1. Obtem o ip do computador local na rede  e verifica se há conexão de rede...
