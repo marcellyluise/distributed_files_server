@@ -214,7 +214,7 @@ function onRequest(request,response) {
             console.log('login de ' + post['nome']);
             
             //registra o usuario
-            usuario = post['nome'];
+            usuario = replaceAll(replaceAll(post['nome'],'\r',''),'\n','');
             fs.readFile('./pages/arqs.html', 
             function(error, data) {
                 response.writeHead(200, {'Content-Type': 'text/html'});
