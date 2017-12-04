@@ -63,8 +63,8 @@ net.createServer(function (socket) {
   socket.name = socket.remoteAddress.match('[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+') + ":" + socket.remotePort 
   // Insere o computador na lista de conexoes
   conexoes.push(socket);
-  // Avisa ao computador para adicionar esta conexao na lista dele também 
-  socket.write('>OK! ' + socket.name + "\n");
+  // Avisa ao computador para atualizar a lista de arquivos 
+  socket.write('>LIS ' + socket.name + "\n");
   
   // Gerencia mensagens que chegam dos outros computadores
   socket.on('data', function (data) {
@@ -149,7 +149,7 @@ serverUDP.on('message', function (message, remote) {
             //console.log(myIP + ':' + this.port + ' <-> ' + remote.address + ':5000');
             oclient.name = oclient.remoteAddress.match('[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+') + ":" + oclient.remotePort;
             conexoes.push(this);
-            oclient.write('>LIS');
+            oclient.write('>OK!');
         });
         
         oclient.on('data', function(data) {
