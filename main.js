@@ -1,4 +1,3 @@
-
 var fs = require('fs');
 var net = require('net');
 var http = require('http');
@@ -89,51 +88,6 @@ net.createServer(function (socket) {
 
 }).listen(5000);
 
-function gerenciaMensagensRecebidas (data, origem, socket) {
-    var vData = data.toString('utf8').split('|-|-|'); 
-    vData.forEach(function (ldata) {
-        var tipo = ldata.toString('utf8').substring(0,4);
-
-        console.log('tipo: ' + tipo);
-        switch (tipo) {
-            case '>LIS':
-            if (arquivos.length>0) {
-                arquivos.forEach(function (arquivo) {
-                    escreve(socket, '>UPL '+ stringify(arquivo));
-                });
-            }
-            break;
-            
-            case '>UPL':
-            //aviso de arquivo adiconado - adicona esse arquivo na lista de arquivos - se já não existir
-            var arquivorecebido = JSON.parse(ldata.toString('utf-8').substring(5));
-            console.log( '->arquivo recebido: ' + arquivorecebido);
-            
-            if (arquivos.indexOf(arquivorecebido)<0) {
-                arquivos.push(arquivorecebido);
-            }
-            break;
-            
-            case '>DEL':
-            //aviso de arquivo apagado - retira esse arquivo da lista de arquivos
-            var arquivoAApagar = JSON.parse(ldata.toString('utf-8').substring(5));
-
-            var picked = arquivos.find(o => o['name'] === arquivoAApagar['name'] && o['owner'] === arquivoAApagar['owner']);
-            if (typeof picked !== 'undefined') {
-                arquivos.splice(arquivos.indexOf(picked), 1);
-             } 
-            console.log( '->arquivo a apagar: ' + stringify(arquivoAApagar));
-            //if (arquivos.indexOf(arquivoAApagar)>=0) {
-            //    arquivos.splice(arquivos.indexOf(arquivoAApagar),1);
-            //}
-            break;
-            default:
-        }
-    });
-
-    console.log(myIP +' <-> '+ origem + " - Mensagem " + data);
-    console.log('Qtd de conexões: ' + conexoes.length);
-}
 
 
 //Avisa que o servidor TCP está escutando...
@@ -184,7 +138,7 @@ serverUDP.on('message', function (message, remote) {
             console.log(conexoes.indexOf(oCon) );
             conexoes.splice(conexoes.indexOf(oCon), 1);
             console.log('Connection closed');
-            console.log('Qtd de conexões: ' + conexoes.length);
+            //console.log('Qtd de conexões: ' + conexoes.length);
         });
        
     }
@@ -401,30 +355,86 @@ function onRequest(request,response) {
     }
 }
 
+//////////////////////////////////////////////////////////////////////////
+//5. Protocolo - Executa ações a partir de mensagens recebidas
+//////////////////////////////////////////////////////////////////////////
+
+function gerenciaMensagensRecebidas (data, origem, socket) {
+    //Pode haver mais de uma mensagem em uma transferencia de dados
+    //então quebra as mensagens usando o separador |-|-|
+
+    var vData = data.toString('utf8').split('|-|-|'); 
+    
+    //Executa ações para cada mensagem recebida
+    vData.forEach(function (ldata) {
+        var tipo = ldata.toString('utf8').substring(0,4);
+        switch (tipo) {
+            case '>LIS':
+            //Essa mensagem é mandada quando um computador se conecta ao grupo
+            //é um pedido para atualizar a lista de arquivos, o que é feito com uma
+            //sequencia de mensagens UPL (upload)
+            if (arquivos.length>0) {
+                arquivos.forEach(function (arquivo) {
+                    escreve(socket, '>UPL '+ stringify(arquivo));
+                });
+            }
+            break;
+            
+            case '>UPL':
+            //aviso de arquivo adiconado - adicona esse arquivo na lista de arquivos - se já não existir
+            var arquivorecebido = JSON.parse(ldata.toString('utf-8').substring(5));
+            if (arquivos.indexOf(arquivorecebido)<0) {
+                arquivos.push(arquivorecebido);
+            }
+            break;
+            
+            case '>DEL':
+            //aviso de arquivo apagado - retira esse arquivo da lista de arquivos
+            var arquivoAApagar = JSON.parse(ldata.toString('utf-8').substring(5));
+
+            var picked = arquivos.find(o => o['name'] === arquivoAApagar['name'] && o['owner'] === arquivoAApagar['owner']);
+            if (typeof picked !== 'undefined') {
+                arquivos.splice(arquivos.indexOf(picked), 1);
+             } 
+            break;
+            default:
+        }
+    });
+
+    //console.log(myIP +' <-> '+ origem + " - Mensagem " + data);
+    console.log('Qtd de conexões: ' + conexoes.length);
+}
+
+//////////////////////////////////////////////////////////////////////////
+//5. Funções menores, para ajudar nas tarefas do programa
+//////////////////////////////////////////////////////////////////////////
+
+//substitui todas as ocorrencias de um conjunto de caracteres em uma string
 function replaceAll(str, find, replace) {
     return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
 }
 
+//usada na função acima...
 function escapeRegExp(str) {
     return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
 }
 
-/* Envia novidades para todos os conectados */
+// Envia uma mensagem para todos os sockets do vetor de conexões
 function broadcast(message) {
     conexoes.forEach(function (conexao) {
       escreve(conexao,message);
     });
-    
-    //console.log(message);
   } 
 
+// Escreve uma mensagem, terminando-a com o separador que padronizamos: |-|-|
   function escreve(socket, mensagem) {
       socket.write(mensagem + '|-|-|');
   }
 
+ // Converte o Json de Arquivos em uma tabela HTML e inclui botões para apagar os arquivos 
   function formataTabelaArquivos() {
     var txt = ' <form action="/delete" method="post" enctype="text/plain"> <table border="1"> \n';
-    txt += "<tr> <th> Caminho </th> <th> Nome </th> <th> tamanho </th> <th>Proprietário</th><th>Ação</th> </tr>\n";
+    txt += "<tr> <th> Caminho </th> <th> Nome </th> <th> Tamanho </th> <th>Proprietário</th><th>Ação</th> </tr>\n";
     for (x in arquivos) {
         txt += "<tr><td>" + arquivos[x].path + "</td><td>" + 
                             arquivos[x].name + "</td><td>" + 
@@ -436,129 +446,3 @@ function broadcast(message) {
     txt += "</table></form>";
     return txt;
   }
-
-////////////////////////////////////////////////////////////////////////////////
-// 1. Obtem o ip do computador local na rede  e verifica se há conexão de rede...
-////////////////////////////////////////////////////////////////////////////////
-/*
-var os = require('os');
-var interfaces = os.networkInterfaces();
-var addresses = [];
-for (var k in interfaces) {
-    for (var k2 in interfaces[k]) {
-        var address = interfaces[k][k2];
-        if (address.family === 'IPv4' && !address.internal) {
-            addresses.push(address.address);
-        }
-    }
-}
-dadosCompartilhados[0]['meuIP'] = addresses[0];
-if (typeof dadosCompartilhados[0]['meuIP'] === 'undefined') {
-    console.log ('Não há conexão de rede!');
-    process.exit(0);
-}
-console.log('Rede ok. Meu ip:' + dadosCompartilhados[0]['meuIP']);
-
-
-//////////////////////////////////////////////////////////////////
-// 2. Cria servidor tcp para controlar a lista de arquivos e conexões
-//////////////////////////////////////////////////////////////////
-var net = require('net');
-var server = net.createServer(function(socket) {
-    socket.on('data', function(data) {
-        console.log ('Dados: ' + socket.remoteAddress + ': ' + data);
-        socket.write ('Dados Recebidos');
-    });
-
-});
-server.on('listening', function () {
-    console.log (' Servidor TCP listening... ');
-});
-server.listen('9090', dadosCompartilhados[0]['meuIP']);
-
-
-/////////////////////////////////////////////////////////////////////////
-//3. função que, de tempos em tempos verifica se os computadores continuam conectados
-/////////////////////////////////////////////////////////////////////////
-setInterval(() => {
-    var vc = require('./mod/verificaConexoes');
-    vc.verificaConexoes();
-  }, 15000);
-
-//////////////////////////////////////////////////////////////////////////
-//4. Servidor HTTP - controla a aplicação local na porta 8080
-//////////////////////////////////////////////////////////////////////////
-
-var serverHTTP = http.createServer(onRequest).listen(8080);
-serverHTTP.on('error', function(err) {
-    if (err.code === 'EADDRINUSE') {
-        console.log('Erro na criação do Servidor Web na porta 8080 - tentando criar na 8081.');
-        var serverHTTP = http.createServer(onRequest).listen(8081);
-        console.log('Provavel sucesso na criação do servidor Web na porta 8081.');
-    }
-});
-console.log('Servidor HTTP - para a aplicação local - iniciado.');
-
-function onRequest(request,response) {
-    
-    var pathName = url.parse(request.url).pathname;
-    
-    if (pathName=='/') {
-        var vw = require('./vw/login');
-        vw.login(response);
-
-    } else if (pathName=='/login' && request.method == 'POST') {
-        var mod = require('./mod/processaLogin');
-        mod.processaLogin(request,response);
-
-    } else {
-       // vamos colocar um erro 404 aqui...
-        console.log('caminho: ' + pathName);
-        response.write('Caminho: ' + pathName);
-        response.end();
-    }
-}
-
-
-//////////////////////////////////////////////////////////////
-//5. SERVIDOR UDP - Para escutar broadcast de novos computadores 
-//                  querendo se conectar à aplicacao
-//////////////////////////////////////////////////////////////
-
-var PORT = 8080;
-var mapa = {};
-var dgram = require('dgram');
-var serverUDP = dgram.createSocket('udp4');
-
-serverUDP.on('listening', function () {
-    var address = serverUDP.address();
-    serverUDP.setBroadcast(true);
-    console.log('UDP Server listening for broadcasts on ' + address.address + ":" + address.port);
-});
-
-serverUDP.on('message', function (message, remote) {
-   //recebeu mensagem broadcast udp
-   //verifica se o ip recebido já está registrado
-   if ( typeof dadosCompartilhados[2]['usuarios'].find(o => o.ip === remote.address) === 'undefined') {
-       //fará a inclusão ip no objeto de usuários
-       dadosCompartilhados[2]['usuarios'].push({ cod: v_cod++, 
-                                                  ip: remote.address, 
-                                                  usuario: '' +message+'',
-                                                  online: 'N' });
-   } else {
-       console.log('Recebeu pedido de conexao udp com ip repetido...');
-   }
-   
-    console.log('Usuario do endereço ' + remote.address + ':' + remote.port +' -  enviou mensagem: ' + message);
-
-});
-
-serverUDP.on('error', function(err) {
-    if (err.code === 'EADDRINUSE') {
-    console.log('Erro na inicialização do servidor UDP.');
-    }
-}
-);
-
-serverUDP.bind(8080,dadosCompartilhados[0]['broadcastAddress']);
-console.log('Local process id:' + process.pid); */
