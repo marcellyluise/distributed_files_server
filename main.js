@@ -25,6 +25,9 @@ var conexoes = [];
 //endereço ip desta instancia
 var myIP = '';
 
+//lista inicial de arquivos
+var solicitouLista = false;
+
 
 
 
@@ -63,8 +66,13 @@ net.createServer(function (socket) {
   socket.name = socket.remoteAddress.match('[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+') + ":" + socket.remotePort 
   // Insere o computador na lista de conexoes
   conexoes.push(socket);
-  // Avisa ao computador para atualizar a lista de arquivos 
-  socket.write('>LIS ' + socket.name + "\n");
+  // Avisa ao computador para atualizar a lista de arquivos, se não pediu ainda...
+  if (!solicitouLista) {
+       escreve(socket, '>LIS ' + socket.name );
+       solicitouLista = true;
+  } else {
+       escreve(socket, '>OK! ' + socket.name );
+  }
   
   // Gerencia mensagens que chegam dos outros computadores
   socket.on('data', function (data) {
