@@ -88,8 +88,12 @@ function gerenciaMensagensRecebidas (data, origem) {
     switch (tipo) {
         case '>UPL':
         var arquivorecebido = JSON.parse(data.toString('utf-8').substring(5,data.toString('utf-8').length));
-        console.log(arquivorecebido);
         arquivos.push(arquivorecebido);
+        break;
+        case '>DEL':
+        var arquivoAApagar = JSON.parse(data.toString('utf-8').substring(5,data.toString('utf-8').length));
+        arquivos.push(arquivorecebido);
+        arquivos.splice(arquivos.indexOf(arquivoAApagar),1);
         break;
         default:
     }
@@ -251,7 +255,7 @@ function onRequest(request,response) {
             dadosArq[1] = qs.parse(dadosArq[1], '; ','=');
             //console.log(dadosArq[0]);
 
-            console.log('->Upload de arquivo:' + dadosArq[1]['filename']);
+            //console.log('->Upload de arquivo:' + dadosArq[1]['filename']);
             //console.log(dadosArq[1]['filename']);
            
             //obtem o corpo do arquivo e converte para texto em base64           
@@ -319,7 +323,46 @@ function onRequest(request,response) {
            });
        });
 
-    } else {
+    } else if (pathName=='/delete' && request.method == 'POST') {
+        
+        var body = '';
+        request.on ('data', function (data) {
+        body += data;
+        });
+        request.on ('end', function() {
+            var post = qs.parse(body);
+            var erroLogin = '';
+            console.log(post);
+            var donoArquivo = post['submitbutton'].substring(4,post['submitbutton'].indexOf('_',5));
+            console.log(donoArquivo);
+            var nomeArquivo = post['submitbutton'].substring(post['submitbutton'].indexOf('_',5)+1);
+            nomeArquivo = replaceAll(nomeArquivo,'\n','');
+            nomeArquivo = replaceAll(nomeArquivo,'\r','');
+            console.log(nomeArquivo);
+
+            var erroDelete = '';
+            var picked = arquivos.find(o => o['name'] === nomeArquivo && o['owner'] === donoArquivo);
+            if (typeof picked !== 'undefined') {
+                arquivos.splice(arquivos.indexOf(picked), 1);
+                broadcast('>DEL ' + stringify(picked));
+            } else {
+                erroDelete = 'Arquivo não foi encontrado! ';
+            }
+
+            
+            fs.readFile('./pages/arqs.html', 
+            function(error, data) {
+                response.writeHead(200, {'Content-Type': 'text/html'});
+                //processa substituições
+                data = replaceAll(String(data),'[[[erro]]]', erroDelete);
+                data = replaceAll(String(data),'[[[usuario]]]', usuario);
+                data = replaceAll(data,'[[[arquivos]]]', formataTabelaArquivos());
+                response.write(data);
+                response.end();
+            });
+        });
+
+    }  else {
        // vamos colocar um erro 404 aqui...
         console.log('caminho: ' + pathName);
         response.write('Caminho: ' + pathName);
@@ -341,16 +384,21 @@ function broadcast(message) {
       conexao.write(message);
     });
     
-    console.log(message);
+    //console.log(message);
   } 
 
   function formataTabelaArquivos() {
-    var txt = "<table border='1'> \n";
-    txt += "<tr> <th> Caminho </th> <th> Nome </th> <th> tamanho </th> <th>Proprietário</th> </tr>\n";
+    var txt = ' <form action="/delete" method="post" enctype="text/plain"> <table border="1"> \n';
+    txt += "<tr> <th> Caminho </th> <th> Nome </th> <th> tamanho </th> <th>Proprietário</th><th>Ação</th> </tr>\n";
     for (x in arquivos) {
-        txt += "<tr><td>" + arquivos[x].path + "</td><td>" + arquivos[x].name + "</td><td>" + arquivos[x].file_length + "</td><td>" + arquivos[x].owner + "</td></tr>\n";
+        txt += "<tr><td>" + arquivos[x].path + "</td><td>" + 
+                            arquivos[x].name + "</td><td>" + 
+                            arquivos[x].file_length + "</td><td>" +
+                             arquivos[x].owner + " </td><td>" + 
+                             '<button type="submit" name="submitbutton" value="DEL_' + arquivos[x].owner + '_' + arquivos[x].name +'"> Apagar </button>\n' +
+                            "</td></tr>\n";
     }
-    txt += "</table>";
+    txt += "</table></form>";
     return txt;
   }
 
