@@ -88,9 +88,9 @@ function gerenciaMensagensRecebidas (data, origem, socket) {
     switch (tipo) {
         case '>LIS':
         if (arquivos.length>0) {
-            socket.write('>UPL ');
             arquivos.forEach(function (arquivo) {
-                socket.write(stringify(arquivo));
+                socket.write('>UPL '+ stringify(arquivo));
+                console.log('separando atividades ...');
               });
         }
         break;
