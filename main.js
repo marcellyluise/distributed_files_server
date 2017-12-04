@@ -83,8 +83,8 @@ net.createServer(function (socket) {
 
 function gerenciaMensagensRecebidas (data, origem, socket) {
     var vData = data.toString('utf8').split('|-|-|'); 
-    vData.forEach(function (data) {
-        var tipo = data.toString('utf8').substring(0,4);
+    vData.forEach(function (ldata) {
+        var tipo = ldata.toString('utf8').substring(0,4);
 
         console.log('tipo: ' + tipo);
         switch (tipo) {
@@ -92,15 +92,15 @@ function gerenciaMensagensRecebidas (data, origem, socket) {
             if (arquivos.length>0) {
                 arquivos.forEach(function (arquivo) {
                     escreve(socket, '>UPL '+ stringify(arquivo));
-                    console.log(' Enviou >UPL ' +  stringify(arquivo) );
-                    console.log('separando atividades ...');
                 });
             }
             break;
             
             case '>UPL':
             //aviso de arquivo adiconado - adicona esse arquivo na lista de arquivos - se já não existir
-            var arquivorecebido = JSON.parse(data.toString('utf-8').substring(5,data.toString('utf-8').length));
+            var arquivorecebido = JSON.parse(ldata.toString('utf-8').substring(5));
+            console.log( '->arquivo recebido: ' + arquivorecebido);
+            
             if (arquivos.indexOf(arquivorecebido)<0) {
                 arquivos.push(arquivorecebido);
             }
@@ -108,7 +108,8 @@ function gerenciaMensagensRecebidas (data, origem, socket) {
             
             case '>DEL':
             //aviso de arquivo apagado - retira esse arquivo da lista de arquivos
-            var arquivoAApagar = JSON.parse(data.toString('utf-8').substring(5,data.toString('utf-8').length));
+            var arquivoAApagar = JSON.parse(data.toString('utf-8').substring(5));
+            console.log( '->arquivo a apagar: ' + arquivoAApagar);
             //if (arquivos.indexOf(arquivoAApagar)>=0) {
                 arquivos.splice(arquivos.indexOf(arquivoAApagar),1);
             //}
