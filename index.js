@@ -254,7 +254,7 @@ function onRequest(request,response) {
 
             var novoArquivo ={        path: '/', 
                                    name: replaceAll(dadosArq[1]['filename'],'"',''), 
-                            file_length: arquivo.length, 
+                            file_length: request.header['content-length'], 
                                   owner: usuario 
                            };
 
@@ -262,7 +262,7 @@ function onRequest(request,response) {
             
             //verifica erros
             //1. O arquivo está vazio?
-            if (novoArquivo['file_length']===0) {
+            if (arquivo.length===0) {
                 erroArquivo = 'Atualizando dados...';
             }
             
