@@ -16,7 +16,10 @@ var usuario = '';
 var arquivos = [];
 
 //modelo da lista de arquivos...
-//arquivos.push({ cod:0, path:'/', name:'arq.txt', file_length: 6,  owner: 'claiton' });
+//arquivos.push({ path:'/', name:'arq.txt', file_length: 6,  owner: 'claiton' });
+
+//corpo dos arquivos
+var corpoArquivo = [];
 
 //lista de conexões que estão ativas 
 var conexoes = [];
@@ -105,7 +108,7 @@ var serverUDP = dgram.createSocket('udp4');
 serverUDP.on('listening', function () {
     var address = serverUDP.address();
     serverUDP.setBroadcast(true);
-    console.log('UDP Server listening for broadcasts on ' + address.address + ":" + address.port);
+    console.log('UDP Server escutando broadcasts em ' + address.address + ":" + address.port);
 });
 
 serverUDP.on('message', function (message, remote) {
@@ -118,27 +121,20 @@ serverUDP.on('message', function (message, remote) {
         //console.log('Estabelecendo conexão com ' + remote.address + ':5000');
         var oclient = new net.Socket();
         oclient.connect(5000, remote.address, function() {
-            //console.log(myIP + ':' + this.port + ' <-> ' + remote.address + ':5000');
+            //connecta e nomeia o socket
             oclient.name = oclient.remoteAddress.match('[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+') + ":" + oclient.remotePort;
             conexoes.push(this);
             escreve(oclient, '>OK!');
         });
         
         oclient.on('data', function(data) {
-           /* if (data.indexOf('ADD')===1) {
-                // Identifica a conexao que está sendo iniciada
-                console.log(myIP +' <-> '+ oclient.name + " - Mensagem > " + data);
-                console.log('Qtd de conexões: ' + conexoes.length);
-            } else { */
                 gerenciaMensagensRecebidas(data,this.name, this);
-           // }
         });
         
         oclient.on('close', function(oCon) {
-            console.log(conexoes.indexOf(oCon) );
+            //console.log(conexoes.indexOf(oCon) );
             conexoes.splice(conexoes.indexOf(oCon), 1);
-            console.log('Connection closed');
-            //console.log('Qtd de conexões: ' + conexoes.length);
+            console.log('Encerra conexao');
         });
        
     }
@@ -221,9 +217,15 @@ function onRequest(request,response) {
         //Obtem a string que limita o arquivo que está sendo feito upload
         //var limites = qs.parse(request.headers['content-type'],'; ','=');
         //console.log(limites);
+        console.log(request.headers);
         
-        //Junta as partes do arquivo na variável body
+       // if (typeof request.headers['content-lenght']!=undefined ) {
+       //     var body = Buffer.allocUnsafe(request.headers['content-length']);
+       // }
+           //Junta as partes do arquivo na variável body
         var body = '';
+
+
         request.on ('data', function (data) {
         body += data;
         });
@@ -238,7 +240,7 @@ function onRequest(request,response) {
             //trata o cabeçalho, até chegar ao nome do arquivo...
             dadosArq = dadosArq[0].split('\r\n',3);
             dadosArq[1] = qs.parse(dadosArq[1], '; ','=');
-            //console.log(dadosArq[0]);
+            console.log(dadosArq[0]);
 
             //console.log('->Upload de arquivo:' + dadosArq[1]['filename']);
             //console.log(dadosArq[1]['filename']);
@@ -262,7 +264,7 @@ function onRequest(request,response) {
             
             //verifica erros
             //1. O arquivo está vazio?
-            if (novoArquivo['file_length']===0) {
+            if (arquivo.length===0) {
                 erroArquivo = 'Atualizando dados...';
             }
             
@@ -273,8 +275,6 @@ function onRequest(request,response) {
             }
 
             //console.log(picked);
-            
- 
             if (erroArquivo==='') {
                 //atualiza a lista local
                 arquivos.push(novoArquivo);               
@@ -319,11 +319,11 @@ function onRequest(request,response) {
             var erroLogin = '';
             console.log(post);
             var donoArquivo = post['submitbutton'].substring(4,post['submitbutton'].indexOf('_',5));
-            console.log(donoArquivo);
+            //console.log(donoArquivo);
             var nomeArquivo = post['submitbutton'].substring(post['submitbutton'].indexOf('_',5)+1);
             nomeArquivo = replaceAll(nomeArquivo,'\n','');
             nomeArquivo = replaceAll(nomeArquivo,'\r','');
-            console.log(nomeArquivo);
+            //console.log(nomeArquivo);
 
             var erroDelete = '';
             var picked = arquivos.find(o => o['name'] === nomeArquivo && o['owner'] === donoArquivo);
