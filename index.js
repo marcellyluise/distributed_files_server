@@ -254,7 +254,7 @@ function onRequest(request,response) {
 
             var novoArquivo ={        path: '/', 
                                    name: replaceAll(dadosArq[1]['filename'],'"',''), 
-                            file_length: request.header['content-length'], 
+                            file_length: request.headers['content-length'], 
                                   owner: usuario 
                            };
 
